@@ -1,927 +1,761 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Roblox Private Server Manager with Friends & Sharing</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 20px;
-      font-family: 'Roboto', sans-serif;
-      background: #121212;
-      color: #eee;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      align-items: center;
-    }
-    h1 {
-      font-weight: 700;
-      margin-bottom: 16px;
-      user-select: none;
-      text-align: center;
-    }
-    #container {
-      background: #1e1e1e;
-      padding: 30px 36px;
-      border-radius: 14px;
-      width: 100%;
-      max-width: 720px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-    button {
-      background: #00bcd4;
-      border: none;
-      border-radius: 10px;
-      color: #000;
-      font-weight: 700;
-      padding: 12px 22px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      user-select: none;
-      box-shadow: 0 5px 15px rgba(0,188,212,0.5);
-      margin: 6px 8px 6px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 15px;
-    }
-    button:hover, button:focus {
-      background: #0097a7;
-      box-shadow: 0 7px 21px rgba(0,151,167,0.9);
-      outline: none;
-    }
-    button:active {
-      background: #00838f;
-      box-shadow: 0 3px 9px rgba(0,131,143,0.9);
-    }
-    input[type="text"],
-    input[type="password"],
-    input[type="search"],
-    input[type="email"] {
-      width: 100%;
-      padding: 14px 18px;
-      margin: 8px 0 12px 0;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-      background: #262626;
-      color: #eee;
-      box-shadow: inset 0 3px 6px rgba(0,0,0,0.7);
-      transition: background 0.3s ease;
-    }
-    input[type="text"]:focus,
-    input[type="password"]:focus,
-    input[type="search"]:focus,
-    input[type="email"]:focus {
-      background: #333;
-      outline: none;
-      box-shadow: inset 0 3px 9px rgba(0,188,212,0.9);
-    }
-    label {
-      display: block;
-      margin: 6px 0 2px 0;
-      font-weight: 600;
-      color: #00bcd4;
-      user-select: none;
-    }
-    section {
-      background: #272727;
-      border-radius: 14px;
-      padding: 24px 32px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-    }
-    #serversList, #sharedWithMeList, #friendsList, #userSearchResults {
-      max-height: 260px;
-      overflow-y: auto;
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .server-item, .friend-item, .shared-server-item, .user-item {
-      background: #1f1f1f;
-      border-radius: 14px;
-      padding: 14px 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.75);
-      gap: 12px;
-    }
-    .server-info, .friend-info, .user-info {
-      color: #00bcd4;
-      font-weight: 600;
-      max-width: 68%;
-      word-break: break-word;
-      font-size: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .server-info small, .friend-info small, .user-info small {
-      font-weight: 400;
-      font-size: 13px;
-      color: #66c3d6cc;
-    }
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    #signInBtn img {
-      vertical-align: middle;
-      height: 22px;
-      width: 22px;
-    }
-    .tag {
-      font-size: 11px;
-      background: #0097a7;
-      color: #000;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 700;
-      user-select: none;
-      align-self: flex-start;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .tag.imported {
-      background: #43a047;
-      color: #fff;
-    }
-    .tag.shared {
-      background: #0288d1;
-      color: #fff;
-    }
-    .badge-domain {
-      background: #00796b;
-      font-size: 11px;
-      font-weight: 700;
-      color: #b2dfdb;
-      padding: 1px 6px;
-      border-radius: 8px;
-      user-select: none;
-      margin-left: 8px;
-      font-family: monospace;
-      align-self: center;
-    }
-    .badge-domain.edu {
-      background: #ef6c00;
-      color: #fff3e0;
-    }
-    .section-header {
-      font-size: 18px;
-      font-weight: 700;
-      border-bottom: 2px solid #00bcd4;
-      padding-bottom: 6px;
-      margin-bottom: 14px;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .info-row {
-      font-size: 13px;
-      color: #66c3d6cc;
-      font-style: italic;
-      margin-top: -8px;
-      margin-bottom: 12px;
-    }
-    .pointer {
-      cursor: pointer;
-    }
-    footer {
-      margin-top: auto;
-      font-size: 12px;
-      color: #555;
-      user-select: none;
-      text-align: center;
-    }
-    .modal-bg {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1500;
-    }
-    .modal {
-      background: #1c1c1c;
-      border-radius: 16px;
-      padding: 26px 36px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 0 8px 48px rgba(0,188,212,0.8);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .modal-header {
-      font-weight: 700;
-      font-size: 20px;
-      color: #00bcd4;
-      margin-bottom: 12px;
-    }
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 14px;
-      margin-top: 10px;
-    }
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      user-select: none;
-      color: #00bcd4;
-    }
-    .checkbox-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-    .small-btn {
-      font-size: 14px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,188,212,0.5);
-      font-weight: 600;
-    }
-    .small-btn.danger {
-      background: #e53935;
-      color: white;
-      box-shadow: 0 3px 10px rgba(229,57,53,0.7);
-    }
-    .small-btn.danger:hover {
-      background: #b71c1c;
-      box-shadow: 0 4px 14px rgba(183,28,28,0.9);
-    }
-    .note {
-      font-size: 12px;
-      font-style: italic;
-      color: #5599aa;
-      margin-top: -6px;
-      user-select: none;
-    }
-    .flex-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .flex-vertical {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Roblox Private Server Manager</title>
+<style>
+  /* --- Basic reset and layout --- */
+  body {
+    margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212; color: #eee;
+  }
+  #app, #login {
+    max-width: 800px; margin: 2rem auto; padding: 1rem;
+  }
+
+  /* --- Buttons --- */
+  button {
+    background-color: #3a3a3a;
+    border: none; border-radius: 4px; color: #eee; padding: 0.5rem 1rem;
+    cursor: pointer; transition: background-color 0.3s;
+    margin: 0 0.3rem 0.3rem 0;
+  }
+  button:hover {
+    background-color: #555;
+  }
+  button.danger {
+    background-color: #b53939;
+  }
+  button.danger:hover {
+    background-color: #d04141;
+  }
+
+  /* --- Lists --- */
+  .server-item, .friend-item, .shared-server-item {
+    background: #222; border-radius: 6px; padding: 0.8rem; margin-bottom: 0.8rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap;
+  }
+  .server-info, .friend-info {
+    flex-grow: 1; min-width: 220px;
+  }
+  .btn-group {
+    flex-shrink: 0;
+  }
+
+  /* --- Tags --- */
+  .tag {
+    background-color: #3a88f7;
+    color: white; padding: 0.2rem 0.6rem; border-radius: 4px;
+    font-size: 0.8rem; margin-left: 0.5rem;
+  }
+  .tag.shared {
+    background-color: #35a835;
+  }
+  .tag.imported {
+    background-color: #f0a335;
+  }
+  .badge-domain {
+    background-color: #555;
+    font-size: 0.75rem; padding: 0.15rem 0.4rem; margin-left: 0.3rem;
+    border-radius: 3px;
+  }
+  .badge-domain.edu {
+    background-color: #7a52f7;
+  }
+
+  /* --- Inputs --- */
+  input[type="text"], input[type="password"], input[type="email"] {
+    padding: 0.5rem; border-radius: 4px; border: none;
+    margin-bottom: 0.5rem; width: 100%;
+    box-sizing: border-box;
+    background: #222; color: #eee;
+  }
+  label {
+    font-weight: 600; margin-bottom: 0.25rem; display: block;
+  }
+
+  /* --- Hidden class (FIXED) --- */
+  .hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    user-select: none !important;
+  }
+
+  /* --- Modal styles --- */
+  #shareModal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    width: 90%;
+    max-width: 480px;
+    z-index: 1000;
+    color: #ddd;
+  }
+  #shareModal h3 {
+    margin-top: 0; margin-bottom: 1rem;
+  }
+  #shareFriendsList {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 0.5rem;
+  }
+  .checkbox-label {
+    display: flex; align-items: center; margin-bottom: 0.4rem;
+  }
+  .checkbox-label input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+  }
+
+  /* Modal buttons */
+  #shareModal button {
+    margin-right: 0.8rem;
+  }
+
+  /* Overlay to darken background when modal is open */
+  #modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.65);
+    z-index: 999;
+  }
+  #modalOverlay.hidden {
+    display: none !important;
+  }
+
+</style>
 </head>
 <body>
 
+<div id="login" class="hidden">
+  <h2>Sign In</h2>
+  <button id="googleSignInBtn">Sign in with Google</button>
+</div>
+
+<div id="app" class="hidden">
   <h1>Roblox Private Server Manager</h1>
 
-  <div id="container">
+  <section>
+    <h2>Your Servers</h2>
+    <div id="serversList"></div>
+  </section>
 
-    <div id="login">
-      <button id="signInBtn" aria-label="Sign in with Google">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" />
-        Sign in with Google
-      </button>
-    </div>
+  <section>
+    <h2>Add / Edit Server</h2>
+    <label for="linkInput">Server Link</label>
+    <input type="text" id="linkInput" placeholder="https://www.roblox.com/share?code=..." />
+    <label for="nameInput">Server Name (optional)</label>
+    <input type="text" id="nameInput" placeholder="Name your server" />
+    <label for="pinInput">4-digit PIN</label>
+    <input type="password" id="pinInput" placeholder="Enter your PIN" maxlength="4" />
+    <button id="addBtn">Add / Save Server</button>
+  </section>
 
-    <div id="app" class="hidden" role="main" aria-live="polite" aria-label="Private server manager app">
+  <section>
+    <h2>Friends</h2>
+    <input type="email" id="friendEmailInput" placeholder="Friend's Google Email" />
+    <button id="addFriendBtn">Add Friend</button>
+    <div id="friendsList"></div>
+  </section>
 
-      <section aria-label="User controls">
-        <div class="flex-row">
-          <button id="signOutBtn" aria-label="Sign out">Sign Out</button>
-          <button id="forgotBtn" aria-label="Reset your account PIN">Forgot PIN?</button>
-        </div>
-        <div class="note">* PIN protects editing, deleting, and sharing servers.</div>
-      </section>
+  <section>
+    <h2>Servers Shared With Me</h2>
+    <div id="sharedWithMeList"></div>
+  </section>
 
-      <section aria-label="Add or edit private server">
-        <div class="section-header">Add / Edit Private Server</div>
-        <label for="serverLink">Private server link *</label>
-        <input id="serverLink" type="text" placeholder="https://www.roblox.com/share?code=..." aria-required="true" autocomplete="off" spellcheck="false" />
-        <label for="serverName">Optional server name</label>
-        <input id="serverName" type="text" placeholder="Friendly name for server" autocomplete="off" spellcheck="false" />
-        <label for="pinInput">4-digit Account PIN *</label>
-        <input id="pinInput" type="password" placeholder="Enter PIN to confirm" maxlength="4" aria-required="true" inputmode="numeric" pattern="\d{4}" />
-        <button id="addServerBtn" aria-label="Add or edit private server">Add / Edit Server</button>
-      </section>
+  <button id="forgotBtn">Forgot PIN</button>
+  <button id="signOutBtn">Sign Out</button>
+</div>
 
-      <section aria-label="Your private servers">
-        <div class="section-header">Your Servers</div>
-        <div id="serversList" tabindex="0" aria-live="polite" role="list"></div>
-      </section>
+<!-- Modal overlay -->
+<div id="modalOverlay" class="hidden"></div>
 
-      <section aria-label="Friends management">
-        <div class="section-header">Friends</div>
-        <label for="friendEmailInput">Add friend by Google Email</label>
-        <div class="flex-row">
-          <input id="friendEmailInput" type="email" placeholder="friend@example.com" autocomplete="off" spellcheck="false" />
-          <button id="addFriendBtn" aria-label="Add friend by email">Add Friend</button>
-        </div>
-        <div class="note">* Friends must be registered users to be added.</div>
-        <div id="friendsList" tabindex="0" aria-live="polite" role="list"></div>
-      </section>
-
-      <section aria-label="Servers shared with me">
-        <div class="section-header">Servers Shared With Me</div>
-        <div id="sharedWithMeList" tabindex="0" aria-live="polite" role="list"></div>
-      </section>
-
-    </div>
+<!-- Share modal -->
+<div id="shareModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle" aria-describedby="shareModalDesc">
+  <h3 id="shareModalTitle">Share Server With Friends</h3>
+  <div id="shareFriendsList"></div>
+  <label>
+    <input type="checkbox" id="shareAllFriendsToggle" />
+    Show to All Friends
+  </label>
+  <div style="margin-top: 1rem;">
+    <button id="shareSaveBtn">Save</button>
+    <button id="shareCancelBtn">Cancel</button>
   </div>
-
-  <footer>© 2025 Roblox Server Manager by BVP</footer>
-
-  <!-- Modal Template for Sharing -->
-  <div id="shareModal" class="modal-bg hidden" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
-    <div class="modal">
-      <div id="shareModalTitle" class="modal-header">Share Server</div>
-      <div id="shareFriendsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 14px;"></div>
-      <label class="checkbox-label"><input type="checkbox" id="shareAllFriendsToggle" /> Show to All Friends</label>
-      <div class="modal-footer">
-        <button id="shareCancelBtn" class="small-btn">Cancel</button>
-        <button id="shareSaveBtn" class="small-btn">Save</button>
-      </div>
-    </div>
-  </div>
+</div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
-    authDomain: "roblox-server-manager.firebaseapp.com",
-    projectId: "roblox-server-manager",
-    storageBucket: "roblox-server-manager.appspot.com",
-    messagingSenderId: "223404001099",
-    appId: "1:223404001099:web:4eee47729061301c158ace",
-    measurementId: "G-G9PV6GD2KN"
-  };
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
+const firebaseConfig = {
+  apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
+  authDomain: "roblox-server-manager.firebaseapp.com",
+  projectId: "roblox-server-manager",
+  storageBucket: "roblox-server-manager.firebasestorage.app",
+  messagingSenderId: "223404001099",
+  appId: "1:223404001099:web:4eee47729061301c158ace",
+  measurementId: "G-G9PV6GD2KN"
+};
+
+const app = initializeApp(firebaseConfig);
+getAnalytics(app);
+const auth = getAuth();
+const db = getFirestore();
+
+const loginDiv = document.getElementById("login");
+const appDiv = document.getElementById("app");
+const googleSignInBtn = document.getElementById("googleSignInBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+
+const serversList = document.getElementById("serversList");
+const addBtn = document.getElementById("addBtn");
+const linkInput = document.getElementById("linkInput");
+const nameInput = document.getElementById("nameInput");
+const pinInput = document.getElementById("pinInput");
+
+const friendEmailInput = document.getElementById("friendEmailInput");
+const addFriendBtn = document.getElementById("addFriendBtn");
+const friendsList = document.getElementById("friendsList");
+
+const sharedWithMeList = document.getElementById("sharedWithMeList");
+
+const forgotBtn = document.getElementById("forgotBtn");
+
+const shareModal = document.getElementById("shareModal");
+const modalOverlay = document.getElementById("modalOverlay");
+const shareFriendsList = document.getElementById("shareFriendsList");
+const shareAllFriendsToggle = document.getElementById("shareAllFriendsToggle");
+const shareSaveBtn = document.getElementById("shareSaveBtn");
+const shareCancelBtn = document.getElementById("shareCancelBtn");
+
+let currentUser = null;
+let accountData = { pin: "", servers: [], friends: [] };
+let usersPublic = [];
+let editingServerIndex = null;
+let sharingServerIndex = null;
+
+// --- AUTH ---
+
+googleSignInBtn.onclick = async () => {
   const provider = new GoogleAuthProvider();
-  const db = getFirestore();
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    alert("Sign in failed: " + e.message);
+  }
+};
 
-  provider.setCustomParameters({ prompt: "select_account" });
+signOutBtn.onclick = async () => {
+  await signOut(auth);
+};
 
-  // UI references
-  const signInBtn = document.getElementById("signInBtn"),
-        signOutBtn = document.getElementById("signOutBtn"),
-        forgotBtn = document.getElementById("forgotBtn"),
-        appDiv = document.getElementById("app"),
-        loginDiv = document.getElementById("login"),
-        serversList = document.getElementById("serversList"),
-        linkInput = document.getElementById("serverLink"),
-        nameInput = document.getElementById("serverName"),
-        pinInput = document.getElementById("pinInput"),
-        addBtn = document.getElementById("addServerBtn"),
-        friendEmailInput = document.getElementById("friendEmailInput"),
-        addFriendBtn = document.getElementById("addFriendBtn"),
-        friendsList = document.getElementById("friendsList"),
-        sharedWithMeList = document.getElementById("sharedWithMeList"),
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    loginDiv.classList.add("hidden");
+    appDiv.classList.remove("hidden");
 
-        shareModal = document.getElementById("shareModal"),
-        shareFriendsList = document.getElementById("shareFriendsList"),
-        shareAllFriendsToggle = document.getElementById("shareAllFriendsToggle"),
-        shareCancelBtn = document.getElementById("shareCancelBtn"),
-        shareSaveBtn = document.getElementById("shareSaveBtn");
+    await saveUserPublicInfo(user);
+    await fetchUsersPublic();
+    await fetchAccount();
+    renderAll();
+  } else {
+    currentUser = null;
+    loginDiv.classList.remove("hidden");
+    appDiv.classList.add("hidden");
+  }
+});
 
-  // State variables
-  let currentUser = null;
-  let accountData = { pin: "", servers: [], friends: [] };
-  let usersPublic = [];
-  let editingServerIndex = null;
-  let sharingServerIndex = null;
+async function saveUserPublicInfo(user) {
+  const ref = doc(db, "usersPublic", user.uid);
+  const snapshot = await getDoc(ref);
+  if (!snapshot.exists()) {
+    await setDoc(ref, {
+      displayName: user.displayName || "Unnamed",
+      email: user.email || "",
+      createdAt: new Date().toISOString(),
+    });
+  }
+}
 
-  // Auth handlers
-  signInBtn.onclick = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      alert("Sign-in failed: " + e.message);
-    }
-  };
+// Fetch the current user's account data
+async function fetchAccount() {
+  const ref = doc(db, "users", currentUser.uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    accountData = snap.data();
+    if (!accountData.pin) accountData.pin = "";
+    if (!accountData.servers) accountData.servers = [];
+    if (!accountData.friends) accountData.friends = [];
+  } else {
+    accountData = { pin: "", servers: [], friends: [] };
+  }
+}
 
-  signOutBtn.onclick = async () => {
-    await signOut(auth);
-    location.reload();
-  };
+// Save user's account data
+async function saveAccount() {
+  const ref = doc(db, "users", currentUser.uid);
+  await setDoc(ref, accountData);
+}
 
-  onAuthStateChanged(auth, async user => {
-    if (user) {
-      currentUser = user;
-      loginDiv.classList.add("hidden");
-      appDiv.classList.remove("hidden");
-      await saveUserPublicInfo(user);
-      await fetchAccount();
-      await fetchUsersPublic();
-      renderAll();
-    } else {
-      currentUser = null;
-      loginDiv.classList.remove("hidden");
-      appDiv.classList.add("hidden");
-    }
+// --- RENDER FUNCTIONS ---
+
+function renderAll() {
+  renderServers();
+  renderFriends();
+  renderSharedWithMe();
+}
+
+function renderServers() {
+  serversList.innerHTML = "";
+  if (!accountData.servers.length) {
+    serversList.innerHTML = `<p style="color:#999; font-style:italic;">No servers added yet.</p>`;
+    return;
+  }
+  accountData.servers.forEach((srv, i) => {
+    const item = document.createElement("div");
+    item.className = "server-item";
+
+    const info = document.createElement("div");
+    info.className = "server-info";
+
+    const linkText = srv.link || "Unknown link";
+    const nameText = srv.name || extractNameFromLink(linkText);
+    const domain = extractDomain(linkText);
+    const addedDate = srv.addedAt ? new Date(srv.addedAt) : null;
+
+    let badges = "";
+    if (srv.sharedWith) badges += `<span class="tag shared">Shared</span> `;
+    if (srv.imported) badges += `<span class="tag imported">Imported</span> `;
+
+    info.innerHTML = `
+      <strong>${escapeHtml(nameText)}</strong>
+      <small>${escapeHtml(linkText)}</small>
+      ${domain ? `<span class="badge-domain ${domain.includes('.edu') ? 'edu' : ''}">${escapeHtml(domain)}</span>` : ''}
+      ${addedDate ? `<small>Added: ${addedDate.toLocaleDateString()}</small>` : ''}
+      ${badges}
+    `;
+
+    const btnGroup = document.createElement("div");
+    btnGroup.className = "btn-group";
+
+    // Join button
+    const joinBtn = document.createElement("button");
+    joinBtn.textContent = "Join";
+    joinBtn.title = "Open server link in new tab";
+    joinBtn.onclick = () => window.open(srv.link, "_blank", "noopener");
+
+    // Edit button
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.onclick = () => openEditServer(i);
+
+    // Delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.classList.add("danger");
+    deleteBtn.onclick = () => deleteServer(i);
+
+    // Share button
+    const shareBtn = document.createElement("button");
+    shareBtn.textContent = "Share";
+    shareBtn.title = "Share this server with friends";
+    shareBtn.onclick = () => openShareModal(i);
+
+    btnGroup.append(joinBtn, editBtn, deleteBtn, shareBtn);
+    item.append(info, btnGroup);
+    serversList.appendChild(item);
   });
+}
 
-  async function saveUserPublicInfo(user) {
-    const ref = doc(db, "usersPublic", user.uid);
-    const snapshot = await getDoc(ref);
-    if (!snapshot.exists()) {
-      await setDoc(ref, {
-        displayName: user.displayName || "Unnamed",
-        email: user.email || "",
-        createdAt: new Date().toISOString(),
-      });
+function renderFriends() {
+  friendsList.innerHTML = "";
+  if (!accountData.friends || !accountData.friends.length) {
+    friendsList.innerHTML = `<p style="color:#999; font-style:italic;">No friends added yet.</p>`;
+    return;
+  }
+  accountData.friends.forEach(uid => {
+    const friend = usersPublic.find(u => u.uid === uid);
+    const item = document.createElement("div");
+    item.className = "friend-item";
+
+    const info = document.createElement("div");
+    info.className = "friend-info";
+
+    if (friend) {
+      info.innerHTML = `<strong>${escapeHtml(friend.displayName)}</strong><small>${escapeHtml(friend.email)}</small>`;
+    } else {
+      info.innerHTML = `<strong>Unknown User</strong><small>UID: ${escapeHtml(uid)}</small>`;
     }
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Remove";
+    removeBtn.classList.add("danger");
+    removeBtn.onclick = () => removeFriend(uid);
+
+    item.append(info, removeBtn);
+    friendsList.appendChild(item);
+  });
+}
+
+function renderSharedWithMe() {
+  sharedWithMeList.innerHTML = "";
+
+  if (!usersPublic.length || !accountData.friends || accountData.friends.length === 0) {
+    sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
+    return;
   }
 
-  // Fetch the current user's account data
-  async function fetchAccount() {
-    const ref = doc(db, "users", currentUser.uid);
+  // Gather servers shared with currentUser from friends
+  let sharedServers = [];
+
+  const friendUsers = usersPublic.filter(u => accountData.friends.includes(u.uid));
+  if (!friendUsers.length) {
+    sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
+    return;
+  }
+
+  Promise.all(friendUsers.map(async friend => {
+    const ref = doc(db, "users", friend.uid);
     const snap = await getDoc(ref);
     if (snap.exists()) {
-      accountData = snap.data();
-      if (!accountData.pin) accountData.pin = "";
-      if (!accountData.servers) accountData.servers = [];
-      if (!accountData.friends) accountData.friends = [];
-    } else {
-      accountData = { pin: "", servers: [], friends: [] };
+      const servers = snap.data().servers || [];
+      servers.forEach(srv => {
+        if (!srv.sharedWith) return;
+        if (srv.sharedWith === "ALL_FRIENDS" || (Array.isArray(srv.sharedWith) && srv.sharedWith.includes(currentUser.uid))) {
+          sharedServers.push({...srv, owner: friend});
+        }
+      });
     }
-  }
-
-  async function saveAccount() {
-    const ref = doc(db, "users", currentUser.uid);
-    await setDoc(ref, accountData);
-  }
-
-  // --- RENDER ---
-
-  function renderAll() {
-    renderServers();
-    renderFriends();
-    renderSharedWithMe();
-  }
-
-  function renderServers() {
-    serversList.innerHTML = "";
-    if (!accountData.servers.length) {
-      serversList.innerHTML = `<p style="color:#999; font-style:italic;">No servers added yet.</p>`;
+  })).then(() => {
+    if (!sharedServers.length) {
+      sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
       return;
     }
-    accountData.servers.forEach((srv, i) => {
-      const item = document.createElement("div");
-      item.className = "server-item";
+    sharedServers.sort((a,b) => {
+      if(a.owner.displayName.toLowerCase() < b.owner.displayName.toLowerCase()) return -1;
+      if(a.owner.displayName.toLowerCase() > b.owner.displayName.toLowerCase()) return 1;
+      if((a.name||"") < (b.name||"")) return -1;
+      if((a.name||"") > (b.name||"")) return 1;
+      return 0;
+    });
+
+    sharedWithMeList.innerHTML = "";
+    sharedServers.forEach(srv => {
+      const div = document.createElement("div");
+      div.className = "shared-server-item";
 
       const info = document.createElement("div");
       info.className = "server-info";
-
-      const linkText = srv.link || "Unknown link";
-      const nameText = srv.name || extractNameFromLink(linkText);
-      const domain = extractDomain(linkText);
-      const addedDate = srv.addedAt ? new Date(srv.addedAt) : null;
-
-      let badges = "";
-      if (srv.sharedWith) badges += `<span class="tag shared">Shared</span> `;
-      if (srv.imported) badges += `<span class="tag imported">Imported</span> `;
-
-      info.innerHTML = `
-        <strong>${escapeHtml(nameText)}</strong>
-        <small>${escapeHtml(linkText)}</small>
-        ${domain ? `<span class="badge-domain ${domain.includes('.edu') ? 'edu' : ''}">${escapeHtml(domain)}</span>` : ''}
-        ${addedDate ? `<small>Added: ${addedDate.toLocaleDateString()}</small>` : ''}
-        ${badges}
-      `;
+      info.innerHTML = `<strong>${escapeHtml(srv.name || extractNameFromLink(srv.link))}</strong>
+        <small>Shared by: ${escapeHtml(srv.owner.displayName)} (${escapeHtml(srv.owner.email)})</small>
+        <small>${escapeHtml(srv.link)}</small>`;
 
       const btnGroup = document.createElement("div");
       btnGroup.className = "btn-group";
 
-      // Join button
       const joinBtn = document.createElement("button");
       joinBtn.textContent = "Join";
       joinBtn.title = "Open server link in new tab";
       joinBtn.onclick = () => window.open(srv.link, "_blank", "noopener");
 
-      // Edit button
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "Edit";
-      editBtn.onclick = () => openEditServer(i);
+      const importBtn = document.createElement("button");
+      importBtn.textContent = "Import";
+      importBtn.title = "Add this server to your own list";
+      importBtn.onclick = () => importSharedServer(srv);
 
-      // Delete button
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.classList.add("danger");
-      deleteBtn.onclick = () => deleteServer(i);
+      btnGroup.append(joinBtn, importBtn);
+      div.append(info, btnGroup);
 
-      // Share button
-      const shareBtn = document.createElement("button");
-      shareBtn.textContent = "Share";
-      shareBtn.title = "Share this server with friends";
-      shareBtn.onclick = () => openShareModal(i);
-
-      btnGroup.append(joinBtn, editBtn, deleteBtn, shareBtn);
-      item.append(info, btnGroup);
-      serversList.appendChild(item);
+      sharedWithMeList.appendChild(div);
     });
+  });
+}
+
+// --- EVENT HANDLERS ---
+
+addBtn.onclick = async () => {
+  const link = linkInput.value.trim();
+  let name = nameInput.value.trim();
+  const pin = pinInput.value.trim();
+
+  if (!link) {
+    alert("Please enter a server link.");
+    return;
+  }
+  if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    alert("Please enter a valid 4-digit PIN.");
+    return;
   }
 
-  function renderFriends() {
-    friendsList.innerHTML = "";
-    if (!accountData.friends || !accountData.friends.length) {
-      friendsList.innerHTML = `<p style="color:#999; font-style:italic;">No friends added yet.</p>`;
-      return;
-    }
-    accountData.friends.forEach(uid => {
-      const friend = usersPublic.find(u => u.uid === uid);
-      const item = document.createElement("div");
-      item.className = "friend-item";
-
-      const info = document.createElement("div");
-      info.className = "friend-info";
-
-      if (friend) {
-        info.innerHTML = `<strong>${escapeHtml(friend.displayName)}</strong><small>${escapeHtml(friend.email)}</small>`;
-      } else {
-        info.innerHTML = `<strong>Unknown User</strong><small>UID: ${escapeHtml(uid)}</small>`;
-      }
-
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "Remove";
-      removeBtn.classList.add("danger");
-      removeBtn.onclick = () => removeFriend(uid);
-
-      item.append(info, removeBtn);
-      friendsList.appendChild(item);
-    });
+  if (accountData.pin && accountData.pin !== pin) {
+    alert("Incorrect PIN.");
+    return;
   }
 
-  function renderSharedWithMe() {
-    sharedWithMeList.innerHTML = "";
-
-    if (!usersPublic.length || !accountData.friends || accountData.friends.length === 0) {
-      sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
-      return;
-    }
-
-    // Gather servers shared with currentUser from friends
-    let sharedServers = [];
-
-    const friendUsers = usersPublic.filter(u => accountData.friends.includes(u.uid));
-    if (!friendUsers.length) {
-      sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
-      return;
-    }
-
-    // Because getDoc is async, fetch all friend servers and aggregate
-    Promise.all(friendUsers.map(async friend => {
-      const ref = doc(db, "users", friend.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const servers = snap.data().servers || [];
-        servers.forEach(srv => {
-          if (!srv.sharedWith) return;
-          if (srv.sharedWith === "ALL_FRIENDS" || (Array.isArray(srv.sharedWith) && srv.sharedWith.includes(currentUser.uid))) {
-            sharedServers.push({...srv, owner: friend});
-          }
-        });
-      }
-    })).then(() => {
-      if (!sharedServers.length) {
-        sharedWithMeList.innerHTML = `<p style="color:#999; font-style:italic;">No servers shared with you yet.</p>`;
-        return;
-      }
-      // Sort by owner then name
-      sharedServers.sort((a,b) => {
-        if(a.owner.displayName.toLowerCase() < b.owner.displayName.toLowerCase()) return -1;
-        if(a.owner.displayName.toLowerCase() > b.owner.displayName.toLowerCase()) return 1;
-        if((a.name||"") < (b.name||"")) return -1;
-        if((a.name||"") > (b.name||"")) return 1;
-        return 0;
-      });
-
-      sharedWithMeList.innerHTML = "";
-      sharedServers.forEach(srv => {
-        const div = document.createElement("div");
-        div.className = "shared-server-item";
-
-        const info = document.createElement("div");
-        info.className = "server-info";
-        info.innerHTML = `<strong>${escapeHtml(srv.name || extractNameFromLink(srv.link))}</strong>
-          <small>Shared by: ${escapeHtml(srv.owner.displayName)} (${escapeHtml(srv.owner.email)})</small>
-          <small>${escapeHtml(srv.link)}</small>`;
-
-        const btnGroup = document.createElement("div");
-        btnGroup.className = "btn-group";
-
-        const joinBtn = document.createElement("button");
-        joinBtn.textContent = "Join";
-        joinBtn.title = "Open server link in new tab";
-        joinBtn.onclick = () => window.open(srv.link, "_blank", "noopener");
-
-        const importBtn = document.createElement("button");
-        importBtn.textContent = "Import";
-        importBtn.title = "Import server to your list";
-        importBtn.onclick = () => importSharedServer(srv);
-
-        btnGroup.append(joinBtn, importBtn);
-        div.append(info, btnGroup);
-        sharedWithMeList.appendChild(div);
-      });
-    });
+  if (!accountData.pin) {
+    accountData.pin = pin;
   }
 
-  // --- ADD / EDIT SERVER ---
-
-  addBtn.onclick = async () => {
-    const link = linkInput.value.trim();
-    const name = nameInput.value.trim();
-    const pin = pinInput.value.trim();
-
-    if (!link || !/https:\/\/www\.roblox\.com\/share\?code=[a-f0-9]{32}&type=Server/i.test(link)) {
-      alert("Please enter a valid Roblox private server link.");
-      return;
-    }
-    if (!/^\d{4}$/.test(pin)) {
-      alert("Please enter your 4-digit Account PIN.");
-      return;
-    }
-    if (accountData.pin && pin !== accountData.pin) {
-      alert("Incorrect PIN.");
-      return;
-    }
-    if (!accountData.pin) accountData.pin = pin;
-
-    if(editingServerIndex !== null) {
-      // Editing existing
-      accountData.servers[editingServerIndex].link = link;
-      accountData.servers[editingServerIndex].name = name || extractNameFromLink(link);
-      editingServerIndex = null;
-    } else {
-      // Adding new or updating existing by link
-      const existingIndex = accountData.servers.findIndex(s => s.link === link);
-      const addedAt = existingIndex === -1 ? new Date().toISOString() : accountData.servers[existingIndex].addedAt;
-      if(existingIndex !== -1) {
-        accountData.servers[existingIndex].name = name || extractNameFromLink(link);
-      } else {
-        accountData.servers.push({link, name: name || extractNameFromLink(link), addedAt, sharedWith: []});
-      }
-    }
-
-    await saveAccount();
-    renderServers();
-
-    linkInput.value = "";
-    nameInput.value = "";
-    pinInput.value = "";
-  };
-
-  function openEditServer(index) {
-    const srv = accountData.servers[index];
-    const pin = prompt("Enter your 4-digit Account PIN:");
-    if (!pin || pin !== accountData.pin) {
-      alert("Incorrect PIN.");
-      return;
-    }
-    linkInput.value = srv.link;
-    nameInput.value = srv.name;
-    editingServerIndex = index;
-    pinInput.value = "";
-    window.scrollTo({top:0, behavior: 'smooth'});
+  if (!name) {
+    name = extractNameFromLink(link);
   }
 
-  async function deleteServer(index) {
-    const pin = prompt("Enter your 4-digit Account PIN:");
-    if (!pin || pin !== accountData.pin) {
-      alert("Incorrect PIN.");
-      return;
-    }
-    if (!confirm("Are you sure you want to delete this server?")) return;
-
-    accountData.servers.splice(index, 1);
-    await saveAccount();
-    renderServers();
-  }
-
-  // --- FRIENDS MANAGEMENT ---
-
-  addFriendBtn.onclick = async () => {
-    const email = friendEmailInput.value.trim().toLowerCase();
-    if (!email || !validateEmail(email)) {
-      alert("Enter a valid email.");
-      return;
-    }
-    if (email === currentUser.email.toLowerCase()) {
-      alert("You can't add yourself.");
-      return;
-    }
-    if (accountData.friends && accountData.friends.length > 0) {
-      // Check if already a friend
-      const friendAlready = usersPublic.find(u => u.email.toLowerCase() === email && accountData.friends.includes(u.uid));
-      if (friendAlready) {
-        alert("Friend already added.");
-        return;
-      }
-    }
-    // Find user by email
-    const friendUser = usersPublic.find(u => u.email.toLowerCase() === email);
-    if (!friendUser) {
-      alert("No registered user found with that email.");
-      return;
-    }
-
-    if (!accountData.friends) accountData.friends = [];
-    accountData.friends.push(friendUser.uid);
-    await saveAccount();
-    friendEmailInput.value = "";
-    renderFriends();
-    alert(`Added friend: ${friendUser.displayName} (${friendUser.email})`);
-    renderSharedWithMe();
-  };
-
-  async function removeFriend(uid) {
-    if (!confirm("Remove this friend?")) return;
-    if (!accountData.friends) return;
-    accountData.friends = accountData.friends.filter(f => f !== uid);
-    await saveAccount();
-    renderFriends();
-    renderSharedWithMe();
-  }
-
-  // --- SHARE SERVERS MODAL ---
-
-  function openShareModal(serverIndex) {
-    sharingServerIndex = serverIndex;
-    shareFriendsList.innerHTML = "";
-
-    const srv = accountData.servers[serverIndex];
-    if (!srv) return;
-
-    if (!accountData.friends || accountData.friends.length === 0) {
-      shareFriendsList.innerHTML = "<p style='color:#999; font-style:italic;'>You have no friends to share with.</p>";
-    } else {
-      accountData.friends.forEach(uid => {
-        const friend = usersPublic.find(u => u.uid === uid);
-        if (!friend) return;
-
-        const div = document.createElement("div");
-        div.className = "checkbox-label";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = uid;
-        checkbox.id = `shareFriend_${uid}`;
-
-        const sharedWith = srv.sharedWith || [];
-        checkbox.checked = sharedWith === "ALL_FRIENDS" || (Array.isArray(sharedWith) && sharedWith.includes(uid));
-
-        const label = document.createElement("label");
-        label.htmlFor = `shareFriend_${uid}`;
-        label.textContent = `${friend.displayName} (${friend.email})`;
-
-        div.append(checkbox, label);
-        shareFriendsList.appendChild(div);
-      });
-    }
-
-    shareAllFriendsToggle.checked = srv.sharedWith === "ALL_FRIENDS";
-
-    shareModal.classList.remove("hidden");
-  }
-
-  shareCancelBtn.onclick = () => {
-    sharingServerIndex = null;
-    shareModal.classList.add("hidden");
-  };
-
-  shareSaveBtn.onclick = async () => {
-    if (sharingServerIndex === null) return;
-    const srv = accountData.servers[sharingServerIndex];
-    if (!srv) return;
-
-    if (shareAllFriendsToggle.checked) {
-      srv.sharedWith = "ALL_FRIENDS";
-    } else {
-      const checkedFriends = Array.from(shareFriendsList.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
-      srv.sharedWith = checkedFriends;
-    }
-    await saveAccount();
-    renderServers();
-    shareModal.classList.add("hidden");
-    sharingServerIndex = null;
-    alert("Sharing settings updated.");
-    renderSharedWithMe();
-  };
-
-  // --- IMPORT SHARED SERVER ---
-
-  async function importSharedServer(srv) {
-    if (!accountData.pin) {
-      alert("Set your Account PIN first.");
-      return;
-    }
-    const pin = prompt("Enter your 4-digit Account PIN to import this server:");
-    if (pin !== accountData.pin) {
-      alert("Incorrect PIN.");
-      return;
-    }
-    const exists = accountData.servers.find(s => s.link === srv.link);
-    if (exists) {
-      alert("You already have this server in your list.");
+  // Check if editing
+  if (editingServerIndex !== null) {
+    accountData.servers[editingServerIndex].link = link;
+    accountData.servers[editingServerIndex].name = name;
+  } else {
+    if (accountData.servers.length >= 10) {
+      alert("Maximum 10 servers allowed.");
       return;
     }
     accountData.servers.push({
-      link: srv.link,
-      name: srv.name || extractNameFromLink(srv.link),
-      imported: true,
-      addedAt: new Date().toISOString(),
-      sharedWith: []
-    });
-    await saveAccount();
-    renderServers();
-    alert(`Imported server "${srv.name || extractNameFromLink(srv.link)}".`);
-  }
-
-  // --- PIN RESET ---
-
-  forgotBtn.onclick = async () => {
-    if (!accountData.pin) {
-      alert("You have not set an Account PIN yet.");
-      return;
-    }
-    const devicePin = prompt("Enter your DEVICE PIN (local to browser):");
-    if (!devicePin || devicePin !== localStorage.getItem("devicePin")) {
-      alert("Incorrect device PIN.");
-      return;
-    }
-    const newPin = prompt("Enter your NEW 4-digit Account PIN:");
-    if (!/^\d{4}$/.test(newPin)) {
-      alert("PIN must be exactly 4 digits.");
-      return;
-    }
-    accountData.pin = newPin;
-    await saveAccount();
-    alert("Your Account PIN has been reset.");
-  };
-
-  // --- HELPERS ---
-
-  function extractNameFromLink(link) {
-    try {
-      const url = new URL(link);
-      if (url.hostname !== "www.roblox.com") return link;
-      const code = url.searchParams.get("code");
-      if (!code) return link;
-      return "Server-" + code.slice(0, 8);
-    } catch {
-      return link;
-    }
-  }
-
-  function extractDomain(url) {
-    try {
-      return new URL(url).hostname;
-    } catch {
-      return null;
-    }
-  }
-
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, function (m) {
-      return ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      })[m];
+      link,
+      name,
+      addedAt: new Date().toISOString()
     });
   }
 
-  // Fetch all public users (for friend search & display)
-  async function fetchUsersPublic() {
-    const usersCol = collection(db, "usersPublic");
-    const snapshot = await getDocs(usersCol);
-    usersPublic = snapshot.docs.map(d => ({ uid: d.id, ...d.data() }));
+  editingServerIndex = null;
+  linkInput.value = "";
+  nameInput.value = "";
+  pinInput.value = "";
+
+  await saveAccount();
+  renderServers();
+};
+
+function openEditServer(index) {
+  editingServerIndex = index;
+  const srv = accountData.servers[index];
+  linkInput.value = srv.link;
+  nameInput.value = srv.name || "";
+  pinInput.value = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function deleteServer(index) {
+  const pin = prompt("Enter your 4-digit PIN to delete this server:");
+  if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    alert("Invalid PIN.");
+    return;
   }
+  if (pin !== accountData.pin) {
+    alert("Incorrect PIN.");
+    return;
+  }
+  accountData.servers.splice(index, 1);
+  await saveAccount();
+  renderServers();
+}
+
+// --- FRIENDS ---
+
+addFriendBtn.onclick = async () => {
+  const email = friendEmailInput.value.trim().toLowerCase();
+  if (!email) {
+    alert("Enter a valid email.");
+    return;
+  }
+  const user = usersPublic.find(u => u.email.toLowerCase() === email);
+  if (!user) {
+    alert("No registered user found with that email.");
+    return;
+  }
+  if (accountData.friends.includes(user.uid)) {
+    alert("Friend already added.");
+    return;
+  }
+  if (accountData.friends.length >= 10) {
+    alert("Maximum 10 friends allowed.");
+    return;
+  }
+  accountData.friends.push(user.uid);
+  await saveAccount();
+  friendEmailInput.value = "";
+  renderFriends();
+};
+
+async function removeFriend(uid) {
+  const idx = accountData.friends.indexOf(uid);
+  if (idx !== -1) {
+    accountData.friends.splice(idx, 1);
+    await saveAccount();
+    renderFriends();
+    renderSharedWithMe();
+  }
+}
+
+// --- SHARING ---
+
+function openShareModal(serverIndex) {
+  sharingServerIndex = serverIndex;
+  shareFriendsList.innerHTML = "";
+  shareAllFriendsToggle.checked = false;
+
+  if (!accountData.friends || accountData.friends.length === 0) {
+    shareFriendsList.innerHTML = "<p>No friends to share with.</p>";
+  } else {
+    accountData.friends.forEach(friendUid => {
+      const friend = usersPublic.find(u => u.uid === friendUid);
+      if (!friend) return;
+
+      const label = document.createElement("label");
+      label.className = "checkbox-label";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = friend.uid;
+
+      // If already shared, check box
+      const srv = accountData.servers[serverIndex];
+      if (srv.sharedWith) {
+        if (srv.sharedWith === "ALL_FRIENDS") {
+          shareAllFriendsToggle.checked = true;
+          checkbox.disabled = true;
+        } else if (Array.isArray(srv.sharedWith) && srv.sharedWith.includes(friend.uid)) {
+          checkbox.checked = true;
+        }
+      }
+
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(friend.displayName || friend.email));
+      shareFriendsList.appendChild(label);
+    });
+  }
+
+  modalOverlay.classList.remove("hidden");
+  shareModal.classList.remove("hidden");
+}
+
+shareAllFriendsToggle.onchange = () => {
+  const checkboxes = shareFriendsList.querySelectorAll("input[type=checkbox]");
+  if (shareAllFriendsToggle.checked) {
+    checkboxes.forEach(chk => {
+      chk.checked = false;
+      chk.disabled = true;
+    });
+  } else {
+    checkboxes.forEach(chk => {
+      chk.disabled = false;
+    });
+  }
+};
+
+shareCancelBtn.onclick = () => {
+  shareModal.classList.add("hidden");
+  modalOverlay.classList.add("hidden");
+  sharingServerIndex = null;
+};
+
+shareSaveBtn.onclick = async () => {
+  if (sharingServerIndex === null) return;
+
+  const srv = accountData.servers[sharingServerIndex];
+  if (shareAllFriendsToggle.checked) {
+    srv.sharedWith = "ALL_FRIENDS";
+  } else {
+    const selectedFriends = Array.from(shareFriendsList.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
+    srv.sharedWith = selectedFriends.length ? selectedFriends : null;
+  }
+  await saveAccount();
+  shareModal.classList.add("hidden");
+  modalOverlay.classList.add("hidden");
+  sharingServerIndex = null;
+  renderServers();
+  renderSharedWithMe();
+};
+
+// Import shared server into user's own list
+async function importSharedServer(server) {
+  if (accountData.servers.length >= 10) {
+    alert("Maximum 10 servers allowed.");
+    return;
+  }
+  if (accountData.servers.some(s => s.link === server.link)) {
+    alert("You already have this server.");
+    return;
+  }
+  accountData.servers.push({
+    link: server.link,
+    name: server.name,
+    addedAt: new Date().toISOString(),
+    imported: true
+  });
+  await saveAccount();
+  renderServers();
+}
+
+// --- HELPERS ---
+
+function escapeHtml(text) {
+  if (!text) return "";
+  return text.replace(/[&<>"']/g, m => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[m]);
+}
+
+function extractNameFromLink(link) {
+  // Example: https://www.roblox.com/share?code=e210d934cf7f094b896db8832aa704c7&type=Server
+  // We'll just grab the code part (without dashes)
+  try {
+    const url = new URL(link);
+    let code = url.searchParams.get("code") || "";
+    code = code.replace(/-/g, "");
+    if (code.length >= 6) return `Join Server ${code.substring(0,6)}`;
+    return "Join Private Server";
+  } catch {
+    return "Join Private Server";
+  }
+}
+
+function extractDomain(link) {
+  try {
+    const url = new URL(link);
+    return url.hostname;
+  } catch {
+    return "";
+  }
+}
+
+// Fetch public users for friends search
+async function fetchUsersPublic() {
+  usersPublic = [];
+  const querySnapshot = await getDocs(collection(db, "usersPublic"));
+  querySnapshot.forEach(doc => {
+    usersPublic.push({ uid: doc.id, ...doc.data() });
+  });
+}
+
+// --- PIN RESET (simplified) ---
+forgotBtn.onclick = () => {
+  alert("Pin reset feature coming soon! For now, contact support.");
+};
+
+// On page load
+(async () => {
+  // Just trigger auth state check
+  // (will auto show login or app)
+})();
 
 </script>
 
