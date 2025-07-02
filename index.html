@@ -384,14 +384,7 @@
       div.innerHTML = `<div class="server-info">${srv.name} from ${srv.ownerEmail}</div>`;
       const j = document.createElement("button");
       j.textContent = "Join";
-      j.onclick = () => {
-        const newTab = window.open(srv.link, "_blank");
-        if (newTab) {
-          setTimeout(() => {
-            newTab.close();
-          }, 2000); // closes after 2 seconds for join tabs
-        }
-      };
+      j.onclick = () => srv.link && window.open(srv.link, "_blank");
       div.appendChild(j);
       sharedServersList.appendChild(div);
     });
@@ -469,12 +462,16 @@
 
       const join = document.createElement("button");
       join.textContent = "Join";
+
+      // HERE IS THE MODIFIED JOIN BUTTON TO OPEN AND CLOSE AFTER 7 SECONDS
       join.onclick = () => {
         const newTab = window.open(srv.link, "_blank");
         if (newTab) {
           setTimeout(() => {
             newTab.close();
-          }, 2000); // closes after 2 seconds for join tabs
+          }, 7000);
+        } else {
+          alert("Popup blocked! Please allow popups for this site.");
         }
       };
 
@@ -482,17 +479,20 @@
       favBtn.textContent = srv.favorites ? "Unfavorite" : "Favorite";
       favBtn.className = srv.favorites ? "favorite" : "";
       favBtn.onclick = async () => {
-        await updateDoc(doc(db, "users", currentUser.uid, "servers", id), {
-          favorites: !srv.favorites,
-        });
+        const ref = doc(db, "users", currentUser.uid, "servers", id);
+        await updateDoc(ref, { favorites: !srv.favorites });
       };
 
       const editBtn = document.createElement("button");
       editBtn.textContent = "Edit";
-      editBtn.onclick = () => {
-        const newName = prompt("New server name:", srv.name);
-        if (newName !== null && newName.trim() !== "") {
-          updateDoc(doc(db, "users", currentUser.uid, "servers", id), { name: newName.trim() });
+      editBtn.onclick = () => editServer(id, srv);
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.className = "danger";
+      delBtn.onclick = async () => {
+        if (confirm(`Delete server "${srv.name}"?`)) {
+          await deleteDoc(doc(db, "users", currentUser.uid, "servers", id));
         }
       };
 
@@ -500,98 +500,113 @@
       shareBtn.textContent = "Share";
       shareBtn.onclick = () => toggleSharePanel(id);
 
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.className = "danger";
-      deleteBtn.onclick = async () => {
-        if (unlimited || prompt("Enter 4-digit PIN to delete") === userPin) {
-          await deleteDoc(doc(db, "users", currentUser.uid, "servers", id));
-        } else alertMsg("Wrong PIN");
-      };
-
       btns.appendChild(join);
       btns.appendChild(favBtn);
       btns.appendChild(editBtn);
+      btns.appendChild(delBtn);
       btns.appendChild(shareBtn);
-      btns.appendChild(deleteBtn);
 
       div.appendChild(info);
       div.appendChild(btns);
 
-      // Share Panel
-      if (openShare === id) {
-        const panel = document.createElement("div");
-        panel.className = "share-panel";
+      // Share panel container (hidden by default)
+      const sharePanel = document.createElement("div");
+      sharePanel.className = "share-panel hidden";
+      sharePanel.id = `share-panel-${id}`;
 
-        // Show to All Friends Checkbox
-        const allChk = document.createElement("label");
-        const allBox = document.createElement("input");
-        allBox.type = "checkbox";
-        allBox.checked = srv.sharedWith.includes("all");
-        allBox.onchange = async () => {
-          const sw = srv.sharedWith.slice();
-          if (allBox.checked) {
-            if (!sw.includes("all")) sw.push("all");
-          } else {
-            const idx = sw.indexOf("all");
-            if (idx > -1) sw.splice(idx, 1);
-          }
-          await updateDoc(doc(db, "users", currentUser.uid, "servers", id), { sharedWith: sw });
-          openShare = null;
-          renderServers(list);
-        };
-        allChk.appendChild(allBox);
-        allChk.appendChild(document.createTextNode("Show to All Friends"));
-        panel.appendChild(allChk);
+      // Friends list checkboxes
+      // We'll get user's friends and list them here for sharing toggles
+      // Also "Show to All Friends" checkbox
 
-        // Friends List
-        friendsList.querySelectorAll(".friend-item").forEach((f) => {
-          const friendId = f.querySelector("button").onclick?.toString().match(/deleteDoc\(doc\(db, "users", currentUser.uid, "friends", "(.*?)"\)/)?.[1];
-          if (!friendId) return;
-
-          const label = document.createElement("label");
-          label.className = "checkbox-inline";
-
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = srv.sharedWith.includes(friendId);
-
-          checkbox.onchange = async () => {
-            const sw = srv.sharedWith.slice();
-            if (checkbox.checked) {
-              if (!sw.includes(friendId)) sw.push(friendId);
-            } else {
-              const idx = sw.indexOf(friendId);
-              if (idx > -1) sw.splice(idx, 1);
-            }
-            await updateDoc(doc(db, "users", currentUser.uid, "servers", id), { sharedWith: sw });
-            openShare = null;
-            renderServers(list);
+      // Fetch friends async
+      (async () => {
+        const friendsSnap = await getDocs(collection(db, "users", currentUser.uid, "friends"));
+        sharePanel.innerHTML = "";
+        if (friendsSnap.empty) {
+          sharePanel.textContent = "No friends to share with.";
+        } else {
+          // Show 'All Friends' checkbox
+          const allFriendsLabel = document.createElement("label");
+          const allCheckbox = document.createElement("input");
+          allCheckbox.type = "checkbox";
+          allCheckbox.value = "all";
+          allCheckbox.checked = srv.sharedWith?.includes("all");
+          allCheckbox.onchange = async (e) => {
+            await toggleShare(id, e.target.value, e.target.checked);
           };
+          allFriendsLabel.appendChild(allCheckbox);
+          allFriendsLabel.appendChild(document.createTextNode(" Show to All Friends"));
+          sharePanel.appendChild(allFriendsLabel);
 
-          label.appendChild(checkbox);
-          label.appendChild(document.createTextNode(f.querySelector(".server-info").textContent));
-          panel.appendChild(label);
-        });
+          friendsSnap.docs.forEach((fr) => {
+            const frData = fr.data();
+            const label = document.createElement("label");
+            label.className = "checkbox-inline";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = fr.id;
+            checkbox.checked = srv.sharedWith?.includes(fr.id);
+            checkbox.onchange = async (e) => {
+              await toggleShare(id, e.target.value, e.target.checked);
+            };
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(" " + frData.email));
+            sharePanel.appendChild(label);
+          });
+        }
+      })();
 
-        div.appendChild(panel);
-      }
+      div.appendChild(sharePanel);
 
       serversList.appendChild(div);
     });
   }
 
-  function toggleSharePanel(id) {
-    openShare = openShare === id ? null : id;
-    renderServers(allServers);
+  function toggleSharePanel(serverId) {
+    if (openShare && openShare !== serverId) {
+      const oldPanel = document.getElementById(`share-panel-${openShare}`);
+      if (oldPanel) oldPanel.classList.add("hidden");
+    }
+    const panel = document.getElementById(`share-panel-${serverId}`);
+    if (panel) {
+      panel.classList.toggle("hidden");
+      openShare = panel.classList.contains("hidden") ? null : serverId;
+    }
   }
-</script>
 
-<script>
-  // Add the auto-close tab script at the end
-  setTimeout(() => {
-    window.close();
-  }, 7000); // Close tab after 7 seconds
+  async function toggleShare(serverId, friendId, add) {
+    const serverRef = doc(db, "users", currentUser.uid, "servers", serverId);
+    const snap = await serverRef.get();
+    const data = snap.exists ? snap.data() : null;
+    if (!data) return;
+
+    let shared = data.sharedWith || [];
+
+    if (add) {
+      if (!shared.includes(friendId)) shared.push(friendId);
+    } else {
+      shared = shared.filter((id) => id !== friendId);
+    }
+
+    await updateDoc(serverRef, { sharedWith: shared });
+  }
+
+  // Editing server name and link
+  function editServer(id, srv) {
+    const newName = prompt("Edit server name:", srv.name);
+    if (newName === null) return;
+    const newLink = prompt("Edit server link:", srv.link);
+    if (newLink === null) return;
+
+    if (!newLink.trim()) return alertMsg("Server link cannot be empty.");
+
+    setDoc(doc(db, "users", currentUser.uid, "servers", id), {
+      ...srv,
+      name: newName.trim() || srv.name,
+      link: newLink.trim(),
+    });
+  }
+
 </script>
 
 </body>
