@@ -16,7 +16,6 @@
     button#switchAccountBtn{float:right;background:#2777f7;}
     input,select,textarea{width:100%;margin-bottom:1rem;padding:0.5rem;border:none;border-radius:6px;background:#222;color:#eee;box-sizing:border-box;}
     .server-item{display:flex;align-items:center;background:#222;padding:.7rem 1rem;border-radius:8px;margin-bottom:1rem;gap:.5rem;}
-    .server-item img{width:60px;height:60px;border-radius:6px;object-fit:cover;}
     .server-info{flex:1;overflow:hidden;}
     .btn-group{display:flex;flex-wrap:wrap;gap:0.3rem;}
     #statsBar{margin:1rem 0;padding:.8rem;background:#1f1f1f;border-radius:6px;}
@@ -233,7 +232,7 @@
   }
   exportBtn.onclick=exportServers; importBtn.onclick=importServers; resetBtn.onclick=resetServers;
 
-  let subsS, subsF, subsSh, intervalSh;
+  let subsS, subsF, intervalSh;
   function setupRealtime(){
     if(subsS) subsS();
     subsS = onSnapshot(collection(db,"users",currentUser.uid,"servers"),snap=>{
@@ -267,11 +266,7 @@
     list.forEach(({id,data:srv})=>{
       const div = document.createElement("div"), btns = document.createElement("div");
       div.className = "server-item";
-      const img = document.createElement("img");
-      const code = srv.link.match(/code=([A-Fa-f0-9]+)/)||srv.link.match(/place\/(\d+)/);
-      img.src = code
-        ? `https://www.roblox.com/thumbnail/asset?assetId=${code[1]}&width=60&height=60&format=png`
-        : "https://via.placeholder.com/60?text=🔗";
+      // no icon img here (removed)
       const info = document.createElement("div");
       info.className = "server-info";
       info.textContent = srv.name;
@@ -307,7 +302,7 @@
       };
 
       [join, favBtn, editBtn, shareBtn, delBtn].forEach(b=>btns.appendChild(b));
-      div.append(img, info, btns);
+      div.append(info, btns);
       serversList.appendChild(div);
     });
   }
