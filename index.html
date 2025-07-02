@@ -4,50 +4,17 @@
   <meta charset="UTF-8" />
   <title>Private Server Manager</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-</head>
-<body>
-  <h1>Private Server Manager</h1>
-
-  <div id="login">
-    <button id="signInBtn">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" style="vertical-align:middle;margin-right:8px">
-      Sign in with Google
-    </button>
-  </div>
-
-  <div id="app" class="hidden">
-    <button id="signOutBtn">Sign Out</button><br><br>
-
-    <button id="forgotBtn">Forgot PIN?</button><br><br>
-
-    <input id="serverLink" type="text" placeholder="Private server link" /><br>
-    <input id="serverName" type="text" placeholder="Optional server name" /><br>
-    <input id="pinInput" type="password" placeholder="4-digit Account PIN" maxlength="4" /><br>
-    <button id="addServerBtn">Add/Edit Private Server</button>
-
-    <div id="serversList"></div>
-  </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
-      authDomain: "roblox-server-manager.firebaseapp.com",
-      projectId: "roblox-server-manager",
-      storageBucket: "roblox-server-manager.appspot.com",
-      messagingSenderId: "223404001099",
-      appId: "1:223404001099:web:4eee47729061301c158ace",
-      measurementId: "G-G9PV6GD2KN"
-    };
+    const firebaseConfig = { /* your config */ };
     initializeApp(firebaseConfig);
 
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     const db = getFirestore();
-
     provider.setCustomParameters({ prompt: "select_account" });
 
     const signInBtn = document.getElementById("signInBtn"),
@@ -64,7 +31,7 @@
     let currentUser = null, accountData = { pin: "", servers: [] };
 
     signInBtn.onclick = async () => {
-      try { await signInWithPopup(auth, provider); }
+      try { await signInWithPopup(auth, provider); } 
       catch { alert("Sign-in failed."); }
     };
 
@@ -78,21 +45,19 @@
         currentUser = user;
         loginDiv.classList.add("hidden");
         appDiv.classList.remove("hidden");
-        setupDevicePin();
-        await fetchAccount();
+        if (!localStorage.getItem("devicePin")) {
+          const d = prompt("Set your 4-digit DEVICE PIN:");
+          if (/^\d{4}$/.test(d)) localStorage.setItem("devicePin", d);
+          else alert("Device PIN must be 4 digits.");
+        }
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) accountData = snap.data(); else await setDoc(doc(db, "users", user.uid), accountData);
         renderServers();
       } else {
         loginDiv.classList.remove("hidden");
         appDiv.classList.add("hidden");
       }
     });
-
-    async function fetchAccount() {
-      const ref = doc(db, "users", currentUser.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) accountData = snap.data();
-      else await setDoc(ref, accountData);
-    }
 
     async function saveAccount() {
       await setDoc(doc(db, "users", currentUser.uid), accountData);
@@ -102,39 +67,53 @@
       serversList.innerHTML = "";
       accountData.servers.forEach((srv, i) => {
         const div = document.createElement("div");
-        div.textContent = `${srv.name || srv.link} `;
-        const btnE = createBtn("Edit", () => editSrv(i));
-        const btnD = createBtn("Del", () => delSrv(i));
-        div.append(btnE, btnD);
+        div.className = "server-card";
+
+        const title = document.createElement("div");
+        title.className = "server-title";
+        title.textContent = srv.name || srv.link;
+        div.append(title);
+
+        const buttons = document.createElement("div");
+        buttons.className = "server-buttons";
+        const edit = createBtn("Edit", () => editSrv(i), false);
+        const del = createBtn("Delete", () => delSrv(i), true);
+        buttons.append(edit, del);
+        div.append(buttons);
+
+        const link = document.createElement("a");
+        link.href = srv.link;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = "▶︎ Join";
+        link.className = "join-link";
+        div.append(link);
         serversList.append(div);
       });
     }
 
-    function createBtn(txt, fn) {
+    function createBtn(txt, fn, isDelete) {
       const b = document.createElement("button");
       b.textContent = txt;
+      b.className = isDelete ? "btn delete" : "btn";
       b.onclick = fn;
       return b;
     }
 
     addBtn.onclick = async () => {
-      const link = linkInput.value.trim(), name = nameInput.value.trim(), pin = pinInput.value.trim();
+      const link = linkInput.value.trim(),
+            name = nameInput.value.trim(),
+            pin = pinInput.value.trim();
+
       if (!link || !/^\d{4}$/.test(pin)) return alert("Enter link + 4-digit PIN");
       if (!accountData.pin) accountData.pin = pin;
       if (pin !== accountData.pin) return alert("Incorrect PIN");
+
       accountData.servers.push({ link, name: name || link });
       await saveAccount();
       renderServers();
       linkInput.value = nameInput.value = pinInput.value = "";
     };
-
-    function setupDevicePin() {
-      if (!localStorage.getItem("devicePin")) {
-        const d = prompt("Set your 4-digit DEVICE PIN:");
-        if (/^\d{4}$/.test(d)) localStorage.setItem("devicePin", d);
-        else alert("Device PIN must be 4 digits.");
-      }
-    }
 
     forgotBtn.onclick = async () => {
       const dp = localStorage.getItem("devicePin");
@@ -166,11 +145,77 @@
   </script>
 
   <style>
-    body { background:#121212; color:#eee; font-family:Segoe UI, sans-serif; margin:20px; text-align:center; }
-    .hidden{display:none}
-    button{margin:6px;padding:8px 12px;border:none;border-radius:6px;background:#00bcd4;color:#000;cursor:pointer}
-    button:hover{background:#0097a7}
-    #serversList > div{margin:10px;}
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 0 0 20px;
+      color: #00e5ff;
+      font-size: 1.8rem;
+    }
+    div { max-width: 480px; width: 100%; }
+    .hidden { display: none; }
+    #login, #app { background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    #login { text-align: center; }
+    button {
+      margin: 8px 4px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #00bcd4;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover { background: #0097a7; }
+    .btn.delete { background: #e53935; color: #fff; }
+    .btn.delete:hover { background: #d32f2f; }
+
+    input {
+      width: calc(100% - 24px);
+      margin: 8px 0;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #2c2c2c;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    #serversList {
+      margin-top: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .server-card {
+      background: #292929;
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .server-title { font-weight: bold; margin-bottom: 6px; }
+    .server-buttons { margin-bottom: 10px; }
+    .join-link {
+      padding: 6px 10px;
+      background: #4dd0e1;
+      border-radius: 6px;
+      color: #000;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .join-link:hover { background: #26c6da; }
   </style>
 </body>
 </html>
