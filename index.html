@@ -461,8 +461,25 @@
       btns.className = "btn-group";
 
       const join = document.createElement("button");
-      join.textContent = "Join";
-      join.onclick = () => window.open(srv.link, "_blank");
+join.textContent = "Join";
+join.onclick = () => {
+  const newTab = window.open(srv.link, "_blank");
+
+  // Try to close after 2 seconds
+  if (newTab) {
+    const closer = setInterval(() => {
+      try {
+        newTab.close();
+        clearInterval(closer);
+      } catch (e) {
+        // Just ignore if it can't be closed
+      }
+    }, 2000);
+  } else {
+    alert("Popup was blocked! Please allow popups for this site.");
+  }
+};
+
 
       const favBtn = document.createElement("button");
       favBtn.textContent = srv.favorites ? "Unfavorite" : "Favorite";
