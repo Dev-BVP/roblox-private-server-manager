@@ -4,28 +4,148 @@
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Roblox Private Server Manager</title>
   <style>
-    body{background:#121212;color:#eee;font-family:Segoe UI,Tahoma,Verdana;margin:0;padding:0;}
-    #app,#login{max-width:900px;margin:2rem auto;padding:1rem;}
-    h1,h2{margin-bottom:1rem;}
-    #unlimitedMsg{color:#f1c40f;font-size:1.1rem;margin-bottom:1rem;}
-    .hidden{display:none!important;}
-    button{margin:0 0.4rem 0.4rem 0;padding:0.5rem 1rem;border:none;border-radius:5px;background:#3a3a3a;color:#eee;cursor:pointer;transition:0.2s;}
-    button:hover{background:#555;}
-    button.danger{background:#d14343;}button.danger:hover{background:#e24f4f;}
-    button.favorite{background:#f1c40f;color:#222;}button.favorite:hover{background:#d4ac0d;}
-    button#switchAccountBtn{float:right;background:#2777f7;}
-    input,select,textarea{width:100%;margin-bottom:1rem;padding:0.5rem;border:none;border-radius:6px;background:#222;color:#eee;box-sizing:border-box;}
-    .server-item{display:flex;align-items:center;background:#222;padding:.7rem 1rem;border-radius:8px;margin-bottom:1rem;gap:.5rem;}
-    .server-info{flex:1;overflow:hidden;}
-    .btn-group{display:flex;flex-wrap:wrap;gap:0.3rem;}
-    #statsBar{margin:1rem 0;padding:.8rem;background:#1f1f1f;border-radius:6px;}
-    #adminTools textarea{background:#000;color:#0f0;height:120px;}
-    #searchBar{margin-bottom:1rem;}
-    @media(max-width:600px){.server-item{flex-direction:column;align-items:flex-start;}.btn-group{width:100%;justify-content:flex-start;}}
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+      margin: 0; padding: 0;
+    }
+    #app, #login {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h1, h2 {
+      margin-bottom: 1rem;
+    }
+    #unlimitedMsg {
+      color: #f1c40f;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .hidden {
+      display: none !important;
+    }
+    button {
+      margin: 0 0.4rem 0.4rem 0;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #3a3a3a;
+      color: #eee;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #555;
+    }
+    button.danger {
+      background: #d14343;
+    }
+    button.danger:hover {
+      background: #e24f4f;
+    }
+    button.favorite {
+      background: #f1c40f;
+      color: #222;
+    }
+    button.favorite:hover {
+      background: #d4ac0d;
+    }
+    button#switchAccountBtn {
+      float: right;
+      background: #2777f7;
+    }
+    input, select, textarea {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 6px;
+      background: #222;
+      color: #eee;
+      box-sizing: border-box;
+    }
+    .server-item {
+      display: flex;
+      align-items: center;
+      background: #222;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+      position: relative;
+    }
+    .server-info {
+      flex: 1;
+      overflow: hidden;
+      word-break: break-word;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    #statsBar {
+      margin: 1rem 0;
+      padding: 0.8rem;
+      background: #1f1f1f;
+      border-radius: 6px;
+    }
+    #adminTools textarea {
+      background: #000;
+      color: #0f0;
+      height: 120px;
+    }
+    #searchBar {
+      margin-bottom: 1rem;
+    }
+    .share-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+      z-index: 10;
+      max-width: 300px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .share-panel label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      margin-bottom: 0.4rem;
+      user-select: none;
+    }
+    .share-panel input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    .checkbox-inline {
+      display: block;
+    }
+    @media (max-width: 600px) {
+      .server-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .btn-group {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .share-panel {
+        max-width: 100%;
+      }
+    }
   </style>
-</head><body>
+</head>
+<body>
 
-<div id="login"><h1>Roblox Private Server Manager</h1>
+<div id="login">
+  <h1>Roblox Private Server Manager</h1>
   <button id="googleSignInBtn">Sign in with Google</button>
 </div>
 
@@ -34,16 +154,20 @@
   <div id="unlimitedMsg" class="hidden">🔥 Unlimited server storage! 🔥</div>
 
   <h1>Your Private Servers</h1>
-  <input type="text" id="searchBar" placeholder="Search servers..." class="hidden"/>
+  <input type="text" id="searchBar" placeholder="Search servers..." class="hidden" />
 
   <div id="statsBar" class="hidden"></div>
 
   <div>
-    <label>Private Server Link</label><input type="url" id="serverLinkInput" placeholder="https://www.roblox.com/share?code=..." />
-    <label>Server Name (optional)</label><input type="text" id="serverNameInput" placeholder="Friendly name" />
-    <label>4‑digit PIN</label><input type="password" id="pinInput" maxlength="4" placeholder="Required unless admin email" />
+    <label>Private Server Link</label>
+    <input type="url" id="serverLinkInput" placeholder="https://www.roblox.com/share?code=..." />
+    <label>Server Name (optional)</label>
+    <input type="text" id="serverNameInput" placeholder="Friendly name" />
+    <label>4‑digit PIN</label>
+    <input type="password" id="pinInput" maxlength="4" placeholder="Required unless admin email" />
     <button id="addServerBtn">Add Server</button>
   </div>
+
   <div id="serversList"></div>
 
   <h2>Friends</h2>
@@ -68,10 +192,26 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-  import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    getDocs,
+    query,
+    where,
+    onSnapshot
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-  const cfg = {
+  const firebaseConfig = {
     apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
     authDomain: "roblox-server-manager.firebaseapp.com",
     projectId: "roblox-server-manager",
@@ -80,43 +220,65 @@
     appId: "1:223404001099:web:4eee47729061301c158ace",
     measurementId: "G-G9PV6GD2KN"
   };
-  const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app), provider = new GoogleAuthProvider();
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
   const loginDiv = document.getElementById("login"),
-        appDiv = document.getElementById("app"),
-        signInBtn = document.getElementById("googleSignInBtn"),
-        switchBtn = document.getElementById("switchAccountBtn"),
-        unlimitedMsg = document.getElementById("unlimitedMsg"),
-        searchBar = document.getElementById("searchBar"),
-        statsBar = document.getElementById("statsBar"),
-        addBtn = document.getElementById("addServerBtn"),
-        serversList = document.getElementById("serversList"),
-        serverLink = document.getElementById("serverLinkInput"),
-        serverName = document.getElementById("serverNameInput"),
-        pinInput = document.getElementById("pinInput"),
-        exportBtn = document.getElementById("exportBtn"),
-        importBtn = document.getElementById("importBtn"),
-        resetBtn = document.getElementById("resetBtn"),
-        adminData = document.getElementById("adminData"),
-        friendEmail = document.getElementById("friendEmailInput"),
-        addFriendBtn = document.getElementById("addFriendBtn"),
-        friendsList = document.getElementById("friendsList"),
-        sharedServersList = document.getElementById("sharedServersList"),
-        adminToolsDiv = document.getElementById("adminTools");
+    appDiv = document.getElementById("app"),
+    signInBtn = document.getElementById("googleSignInBtn"),
+    switchBtn = document.getElementById("switchAccountBtn"),
+    unlimitedMsg = document.getElementById("unlimitedMsg"),
+    searchBar = document.getElementById("searchBar"),
+    statsBar = document.getElementById("statsBar"),
+    addBtn = document.getElementById("addServerBtn"),
+    serversList = document.getElementById("serversList"),
+    serverLink = document.getElementById("serverLinkInput"),
+    serverName = document.getElementById("serverNameInput"),
+    pinInput = document.getElementById("pinInput"),
+    exportBtn = document.getElementById("exportBtn"),
+    importBtn = document.getElementById("importBtn"),
+    resetBtn = document.getElementById("resetBtn"),
+    adminData = document.getElementById("adminData"),
+    friendEmail = document.getElementById("friendEmailInput"),
+    addFriendBtn = document.getElementById("addFriendBtn"),
+    friendsList = document.getElementById("friendsList"),
+    sharedServersList = document.getElementById("sharedServersList"),
+    adminToolsDiv = document.getElementById("adminTools");
 
-  let currentUser=null,userPin=null,unlimited=false,allServers=[];
+  let currentUser = null,
+    userPin = null,
+    unlimited = false,
+    allServers = [];
 
-  function toggle(el,show){el.classList.toggle("hidden",!show);}
-  function alertMsg(t){alert(t);}
+  // Keep track of the open share panel's server ID
+  let openShare = null;
 
-  function updateUI(u){
-    if(u){
+  function toggle(el, show) {
+    el.classList.toggle("hidden", !show);
+  }
+  function alertMsg(t) {
+    alert(t);
+  }
+  function clearAll() {
+    serversList.innerHTML = "";
+    friendsList.innerHTML = "";
+    sharedServersList.innerHTML = "";
+    adminData.value = "";
+    statsBar.textContent = "";
+    searchBar.value = "";
+  }
+
+  function updateUI(u) {
+    if (u) {
       loginDiv.classList.add("hidden");
       appDiv.classList.remove("hidden");
-      switchBtn.style.display="inline-block";
-      currentUser=u;
-      userPin=null;
-      unlimited = u.email?.toLowerCase()==="bvpstudios012@gmail.com";
+      switchBtn.style.display = "inline-block";
+      currentUser = u;
+      userPin = null;
+      unlimited = u.email?.toLowerCase() === "bvpstudios012@gmail.com";
       toggle(unlimitedMsg, unlimited);
       toggle(searchBar, unlimited);
       toggle(statsBar, unlimited);
@@ -125,148 +287,174 @@
     } else {
       loginDiv.classList.remove("hidden");
       appDiv.classList.add("hidden");
-      currentUser=null;
+      currentUser = null;
       clearAll();
     }
   }
 
-  signInBtn.onclick = async ()=>{
-    try{await signInWithPopup(auth, provider.setCustomParameters({prompt:"select_account"}));}
-    catch(e){alertMsg("Sign-in failed: "+e.message);}
+  signInBtn.onclick = async () => {
+    try {
+      await signInWithPopup(auth, provider.setCustomParameters({ prompt: "select_account" }));
+    } catch (e) {
+      alertMsg("Sign-in failed: " + e.message);
+    }
   };
   switchBtn.onclick = signInBtn.onclick;
   onAuthStateChanged(auth, updateUI);
 
-  async function addServer(){
-    const link=serverLink.value.trim(),
-          name=serverName.value.trim(),
-          pin=pinInput.value.trim();
+  async function addServer() {
+    const link = serverLink.value.trim(),
+      name = serverName.value.trim(),
+      pin = pinInput.value.trim();
 
-    if(!link) return alertMsg("Enter server link.");
-    if(!unlimited){
-      if(!pin || !/^\d{4}$/.test(pin)) return alertMsg("4-digit PIN needed.");
-      if(!userPin) userPin=pin;
-      else if(pin!==userPin) return alertMsg("Wrong PIN.");
-      const snap = await getDocs(collection(db,"users",currentUser.uid,"servers"));
-      if(snap.size>=10) return alertMsg("Max 10 servers allowed.");
+    if (!link) return alertMsg("Enter server link.");
+    if (!unlimited) {
+      if (!pin || !/^\d{4}$/.test(pin)) return alertMsg("4-digit PIN needed.");
+      if (!userPin) userPin = pin;
+      else if (pin !== userPin) return alertMsg("Wrong PIN.");
+      const snap = await getDocs(collection(db, "users", currentUser.uid, "servers"));
+      if (snap.size >= 10) return alertMsg("Max 10 servers allowed.");
     }
 
-    const code = (link.match(/code=([A-Fa-f0-9]+)/)||[])[1]||"Private";
-    const sName = name || `Server ${code.slice(0,6)}`;
+    const code = (link.match(/code=([A-Fa-f0-9]+)/) || [])[1] || "Private";
+    const sName = name || `Server ${code.slice(0, 6)}`;
 
-    await setDoc(doc(collection(db,"users",currentUser.uid,"servers")), {
-      link, name: sName, favorites:false, sharedWith:[], createdAt:new Date()
+    await setDoc(doc(collection(db, "users", currentUser.uid, "servers")), {
+      link,
+      name: sName,
+      favorites: false,
+      sharedWith: [],
+      createdAt: new Date(),
     });
 
     serverLink.value = serverName.value = pinInput.value = "";
   }
   addBtn.onclick = addServer;
 
-  async function addFriend(){
+  async function addFriend() {
     const e = friendEmail.value.trim().toLowerCase();
-    if(!e) return alertMsg("Enter friend email.");
-    if(e === currentUser.email.toLowerCase()) return alertMsg("Can't add yourself.");
-    const q = query(collection(db,"users"), where("email","==",e));
+    if (!e) return alertMsg("Enter friend email.");
+    if (e === currentUser.email.toLowerCase()) return alertMsg("Can't add yourself.");
+    const q = query(collection(db, "users"), where("email", "==", e));
     const snap = await getDocs(q);
-    if(snap.empty) return alertMsg("User not found.");
-    await setDoc(doc(db,"users",currentUser.uid,"friends",snap.docs[0].id), {email:e});
+    if (snap.empty) return alertMsg("User not found.");
+    await setDoc(doc(db, "users", currentUser.uid, "friends", snap.docs[0].id), { email: e });
     friendEmail.value = "";
   }
   addFriendBtn.onclick = addFriend;
 
-  function renderFriends(data){
+  function renderFriends(data) {
     friendsList.innerHTML = "";
-    if(data.length===0){friendsList.innerHTML="<p style='color:#999;'>No friends.</p>";return;}
-    data.forEach(({id,data:d})=>{
+    if (data.length === 0) {
+      friendsList.innerHTML = "<p style='color:#999;'>No friends.</p>";
+      return;
+    }
+    data.forEach(({ id, data: d }) => {
       const div = document.createElement("div");
-      div.className="friend-item";
+      div.className = "friend-item";
       div.innerHTML = `<div class="server-info">${d.email}</div>`;
       const b = document.createElement("button");
-      b.textContent="Remove";
-      b.className="danger";
-      b.onclick = async ()=> await deleteDoc(doc(db,"users",currentUser.uid,"friends",id));
+      b.textContent = "Remove";
+      b.className = "danger";
+      b.onclick = async () => await deleteDoc(doc(db, "users", currentUser.uid, "friends", id));
       div.appendChild(b);
       friendsList.appendChild(div);
     });
   }
 
-  async function refreshShared(){
+  async function refreshShared() {
     sharedServersList.innerHTML = "";
-    const us = await getDocs(collection(db,"users"));
+    const us = await getDocs(collection(db, "users"));
     const arr = [];
-    for(const u of us.docs.filter(d=>d.id!==currentUser.uid)){
-      const ssnap = await getDocs(query(collection(db,"users",u.id,"servers"), where("sharedWith","array-contains-any",[currentUser.uid,"all"])));
-      ssnap.forEach(s=>arr.push({id:s.id,ownerEmail:u.data().email,name:s.data().name,link:s.data().link}));
+    for (const u of us.docs.filter((d) => d.id !== currentUser.uid)) {
+      const ssnap = await getDocs(
+        query(collection(db, "users", u.id, "servers"), where("sharedWith", "array-contains-any", [currentUser.uid, "all"]))
+      );
+      ssnap.forEach((s) =>
+        arr.push({ id: s.id, ownerEmail: u.data().email, name: s.data().name, link: s.data().link })
+      );
     }
-    if(arr.length===0){sharedServersList.innerHTML="<p style='color:#999;'>No shared servers.</p>";return;}
-    arr.forEach(srv=>{
-      const div=document.createElement("div");
-      div.className="server-item";
+    if (arr.length === 0) {
+      sharedServersList.innerHTML = "<p style='color:#999;'>No shared servers.</p>";
+      return;
+    }
+    arr.forEach((srv) => {
+      const div = document.createElement("div");
+      div.className = "server-item";
       div.innerHTML = `<div class="server-info">${srv.name} from ${srv.ownerEmail}</div>`;
-      const j=document.createElement("button");
-      j.textContent="Join";
-      j.onclick=()=>srv.link&&window.open(srv.link,"_blank");
+      const j = document.createElement("button");
+      j.textContent = "Join";
+      j.onclick = () => srv.link && window.open(srv.link, "_blank");
       div.appendChild(j);
       sharedServersList.appendChild(div);
     });
   }
 
-  async function exportServers(){
-    const snap = await getDocs(collection(db,"users",currentUser.uid,"servers"));
-    const arr = snap.docs.map(d=>d.data());
-    adminData.value = JSON.stringify(arr,null,2);
+  async function exportServers() {
+    const snap = await getDocs(collection(db, "users", currentUser.uid, "servers"));
+    const arr = snap.docs.map((d) => d.data());
+    adminData.value = JSON.stringify(arr, null, 2);
   }
-  async function importServers(){
-    try{
+  async function importServers() {
+    try {
       const arr = JSON.parse(adminData.value);
-      if(!Array.isArray(arr)) throw "Not an array";
-      for(const s of arr) await setDoc(doc(collection(db,"users",currentUser.uid,"servers")), s);
+      if (!Array.isArray(arr)) throw "Not an array";
+      for (const s of arr) await setDoc(doc(collection(db, "users", currentUser.uid, "servers")), s);
       alertMsg("Import successful.");
-    } catch(e){ alertMsg("Import failed: "+e); }
+    } catch (e) {
+      alertMsg("Import failed: " + e);
+    }
   }
-  async function resetServers(){
-    if(!confirm("Delete ALL your servers?")) return;
-    const snap = await getDocs(collection(db,"users",currentUser.uid,"servers"));
-    for(const d of snap.docs) await deleteDoc(doc(db,"users",currentUser.uid,"servers",d.id));
+  async function resetServers() {
+    if (!confirm("Delete ALL your servers?")) return;
+    const snap = await getDocs(collection(db, "users", currentUser.uid, "servers"));
+    for (const d of snap.docs) await deleteDoc(doc(db, "users", currentUser.uid, "servers", d.id));
     alertMsg("All servers deleted.");
   }
-  exportBtn.onclick=exportServers; importBtn.onclick=importServers; resetBtn.onclick=resetServers;
+  exportBtn.onclick = exportServers;
+  importBtn.onclick = importServers;
+  resetBtn.onclick = resetServers;
 
   let subsS, subsF, intervalSh;
-  function setupRealtime(){
-    if(subsS) subsS();
-    subsS = onSnapshot(collection(db,"users",currentUser.uid,"servers"),snap=>{
-      allServers = snap.docs.map(d=>({id:d.id,data:d.data()}));
+  function setupRealtime() {
+    if (subsS) subsS();
+    subsS = onSnapshot(collection(db, "users", currentUser.uid, "servers"), (snap) => {
+      allServers = snap.docs.map((d) => ({ id: d.id, data: d.data() }));
       const filter = searchBar.value.toLowerCase();
       const list = unlimited
-        ? allServers.filter(s=>!filter||s.data.name.toLowerCase().includes(filter))
+        ? allServers.filter((s) => !filter || s.data.name.toLowerCase().includes(filter))
         : allServers;
       renderServers(list);
-      if(unlimited){
+      if (unlimited) {
         const tot = list.length;
-        const fav = list.filter(s=>s.data.favorites).length;
+        const fav = list.filter((s) => s.data.favorites).length;
         statsBar.textContent = `Total: ${tot} servers · Favorites: ${fav}`;
       }
     });
-    if(subsF) subsF();
-    subsF = onSnapshot(collection(db,"users",currentUser.uid,"friends"),snap=>renderFriends(snap.docs.map(d=>({id:d.id,data:d.data()}))));
+    if (subsF) subsF();
+    subsF = onSnapshot(collection(db, "users", currentUser.uid, "friends"), (snap) =>
+      renderFriends(snap.docs.map((d) => ({ id: d.id, data: d.data() })))
+    );
     refreshShared();
-    if(intervalSh) clearInterval(intervalSh);
+    if (intervalSh) clearInterval(intervalSh);
     intervalSh = setInterval(refreshShared, 15000);
   }
 
-  searchBar.oninput = ()=> {
+  searchBar.oninput = () => {
     const filter = searchBar.value.toLowerCase();
-    renderServers(allServers.filter(s=>s.data.name.toLowerCase().includes(filter)));
+    renderServers(allServers.filter((s) => s.data.name.toLowerCase().includes(filter)));
   };
 
-  function renderServers(list){
-    serversList.innerHTML="";
-    if(list.length===0){serversList.innerHTML="<p style='color:#999;'>No private servers.</p>";return;}
-    list.forEach(({id,data:srv})=>{
-      const div = document.createElement("div"), btns = document.createElement("div");
+  function renderServers(list) {
+    serversList.innerHTML = "";
+    if (list.length === 0) {
+      serversList.innerHTML = "<p style='color:#999;'>No private servers.</p>";
+      return;
+    }
+    list.forEach(({ id, data: srv }) => {
+      const div = document.createElement("div"),
+        btns = document.createElement("div");
       div.className = "server-item";
-      // no icon img here (removed)
       const info = document.createElement("div");
       info.className = "server-info";
       info.textContent = srv.name;
@@ -274,89 +462,124 @@
 
       const join = document.createElement("button");
       join.textContent = "Join";
-      join.onclick = () => window.open(srv.link,"_blank");
+      join.onclick = () => window.open(srv.link, "_blank");
 
       const favBtn = document.createElement("button");
-      favBtn.textContent = srv.favorites?"Unfavorite":"Favorite";
-      favBtn.className = srv.favorites?"favorite":"";
-      favBtn.onclick = async () => { await updateDoc(doc(db,"users",currentUser.uid,"servers",id),{favorites:!srv.favorites}); };
+      favBtn.textContent = srv.favorites ? "Unfavorite" : "Favorite";
+      favBtn.className = srv.favorites ? "favorite" : "";
+      favBtn.onclick = async () => {
+        await updateDoc(doc(db, "users", currentUser.uid, "servers", id), { favorites: !srv.favorites });
+      };
 
       const editBtn = document.createElement("button");
       editBtn.textContent = "Edit Name";
       editBtn.onclick = async () => {
-        const nm = prompt("New name:",srv.name);
-        if(nm) await updateDoc(doc(db,"users",currentUser.uid,"servers",id),{name:nm});
+        const nm = prompt("New name:", srv.name);
+        if (nm) await updateDoc(doc(db, "users", currentUser.uid, "servers", id), { name: nm });
       };
 
       const shareBtn = document.createElement("button");
       shareBtn.textContent = "Share";
-      shareBtn.onclick = () => toggleShare(id, srv);
+      shareBtn.onclick = () => toggleShare(id, srv, div);
 
       const delBtn = document.createElement("button");
       delBtn.textContent = "Delete";
       delBtn.className = "danger";
       delBtn.onclick = async () => {
-        if(unlimited || prompt("Enter PIN:")==userPin) {
-          await deleteDoc(doc(db,"users",currentUser.uid,"servers",id));
+        if (unlimited || prompt("Enter PIN:") == userPin) {
+          await deleteDoc(doc(db, "users", currentUser.uid, "servers", id));
         } else alertMsg("Wrong PIN.");
       };
 
-      [join, favBtn, editBtn, shareBtn, delBtn].forEach(b=>btns.appendChild(b));
+      [join, favBtn, editBtn, shareBtn, delBtn].forEach((b) => btns.appendChild(b));
       div.append(info, btns);
       serversList.appendChild(div);
     });
   }
 
-  let openShare = null;
-  function toggleShare(sid, srv){
-    document.querySelectorAll(".share-panel").forEach(el => el.remove());
-    if(openShare===sid){openShare=null;return;}
-    openShare=sid;
-    const parent = [...serversList.children].find(c=>c.querySelector(".server-info").textContent===srv.name);
-    if(!parent) return;
+  async function toggleShare(sid, srv, parentDiv) {
+    // Remove any existing share panel
+    document.querySelectorAll(".share-panel").forEach((el) => el.remove());
+
+    if (openShare === sid) {
+      // Close if clicking the same share button
+      openShare = null;
+      return;
+    }
+    openShare = sid;
 
     const panel = document.createElement("div");
-    panel.className="share-panel";
+    panel.className = "share-panel";
 
+    // Checkbox for "Share with all"
     const chkAll = document.createElement("input");
-    chkAll.type="checkbox";
-    chkAll.checked = srv.sharedWith?.includes("all")||false;
-    panel.appendChild(document.createElement("label").append(chkAll, " Share with all"));
+    chkAll.type = "checkbox";
+    chkAll.checked = srv.sharedWith?.includes("all") || false;
 
+    const lblAll = document.createElement("label");
+    lblAll.appendChild(chkAll);
+    lblAll.appendChild(document.createTextNode(" Share with all"));
+
+    panel.appendChild(lblAll);
+
+    // Friends list with checkboxes
     const fdDiv = document.createElement("div");
-    fdDiv.style.cssText="max-height:120px;overflow:auto;margin-top:.5rem;";
-    getDocs(collection(db,"users",currentUser.uid,"friends")).then(fs => {
-      fs.docs.forEach(fd => {
-        const fid=fd.id, fe=fd.data().email;
+    fdDiv.style.cssText = "max-height:120px; overflow:auto; margin-top:.5rem;";
+
+    const friendsSnap = await getDocs(collection(db, "users", currentUser.uid, "friends"));
+    const friendDocs = friendsSnap.docs;
+
+    if (friendDocs.length === 0) {
+      fdDiv.innerHTML = "<p style='color:#999;'>No friends to share with.</p>";
+    } else {
+      friendDocs.forEach((fd) => {
+        const fid = fd.id,
+          fe = fd.data().email;
+
         const lbl = document.createElement("label");
-        lbl.className="checkbox-inline";
+        lbl.className = "checkbox-inline";
+
         const cb = document.createElement("input");
-        cb.type="checkbox";
-        cb.checked = srv.sharedWith?.includes(fid)||false;
+        cb.type = "checkbox";
+        cb.checked = srv.sharedWith?.includes(fid) || false;
         cb.disabled = chkAll.checked;
+
         cb.onchange = async () => {
-          let arr = srv.sharedWith||[];
-          if(cb.checked) arr.includes(fid)||arr.push(fid);
-          else arr = arr.filter(a => a!==fid);
-          if(arr.includes("all")){arr = arr.filter(a=>"all"!==a); chkAll.checked=false;}
-          await updateDoc(doc(db,"users",currentUser.uid,"servers",sid),{sharedWith:arr});
+          let arr = srv.sharedWith || [];
+          if (cb.checked) {
+            if (!arr.includes(fid)) arr.push(fid);
+          } else {
+            arr = arr.filter((a) => a !== fid);
+          }
+          if (arr.includes("all")) {
+            arr = arr.filter((a) => a !== "all");
+            chkAll.checked = false;
+          }
+          await updateDoc(doc(db, "users", currentUser.uid, "servers", sid), { sharedWith: arr });
           srv.sharedWith = arr;
+          // Re-render share panel with updated data (optional)
         };
-        lbl.append(cb, " "+fe);
-        fdDiv.append(lbl);
+
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(" " + fe));
+        fdDiv.appendChild(lbl);
       });
-    });
+    }
     panel.appendChild(fdDiv);
 
     chkAll.onchange = async () => {
       let arr = chkAll.checked ? ["all"] : [];
-      await updateDoc(doc(db,"users",currentUser.uid,"servers",sid),{sharedWith:arr});
+      await updateDoc(doc(db, "users", currentUser.uid, "servers", sid), { sharedWith: arr });
       srv.sharedWith = arr;
-      fdDiv.querySelectorAll("input").forEach(i => { i.disabled=chkAll.checked; if(chkAll.checked) i.checked=false; });
+      fdDiv.querySelectorAll("input[type=checkbox]").forEach((i) => {
+        i.disabled = chkAll.checked;
+        if (chkAll.checked) i.checked = false;
+      });
     };
 
-    parent.appendChild(panel);
+    parentDiv.appendChild(panel);
   }
 </script>
 
-</body></html>
+</body>
+</html>
