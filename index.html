@@ -141,11 +141,14 @@
 <div id="app" class="hidden">
   <button id="switchAccountBtn" title="Switch Google Account">Switch Account</button>
   <div id="unlimitedMsg" class="hidden"></div>
+
   <h1>Your Private Servers</h1>
 
   <div>
     <label for="serverLinkInput">Private Server Link</label>
     <input type="url" id="serverLinkInput" placeholder="https://www.roblox.com/share?code=YOUR_CODE" />
+    <label for="serverNameInput">Server Name (optional)</label>
+    <input type="text" id="serverNameInput" placeholder="Enter a friendly name for this server" />
     <label for="pinInput">4-digit PIN</label>
     <input type="password" id="pinInput" maxlength="4" placeholder="Set or enter your 4-digit PIN" />
     <button id="addServerBtn">Add Server</button>
@@ -172,7 +175,6 @@
     GoogleAuthProvider,
     signInWithPopup,
     onAuthStateChanged,
-    signOut
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
   import {
@@ -180,15 +182,12 @@
     collection,
     doc,
     setDoc,
-    getDoc,
     getDocs,
     updateDoc,
     deleteDoc,
     query,
     where,
     onSnapshot,
-    arrayUnion,
-    arrayRemove,
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -214,6 +213,7 @@
   const unlimitedMsg = document.getElementById("unlimitedMsg");
 
   const serverLinkInput = document.getElementById("serverLinkInput");
+  const serverNameInput = document.getElementById("serverNameInput");
   const pinInput = document.getElementById("pinInput");
   const addServerBtn = document.getElementById("addServerBtn");
   const serversList = document.getElementById("serversList");
@@ -293,6 +293,7 @@
 
   async function addServer() {
     const link = serverLinkInput.value.trim();
+    const nameRaw = serverNameInput.value.trim();
     const pin = pinInput.value.trim();
 
     if (!link) return showAlert("Enter a private server link.");
@@ -304,22 +305,29 @@
       return showAlert("Incorrect PIN.");
     }
 
-    // Limit 10 servers max unless unlimitedUser
     if (!unlimitedUser) {
       const userServersCol = collection(db, "users", currentUser.uid, "servers");
       const snap = await getDocs(userServersCol);
       if (snap.size >= 10) return showAlert("Maximum 10 servers allowed.");
     }
 
-    // Add server with defaults
+    // Extract or fallback name:
+    let serverName = nameRaw;
+    if (!serverName) {
+      const match = link.match(/code=([a-f0-9]+)/i);
+      serverName = match ? `Server ${match[1].substring(0,6)}` : "Private Server";
+    }
+
     try {
       await setDoc(doc(collection(db, "users", currentUser.uid, "servers")), {
         link,
+        name: serverName,
         favorites: false,
         sharedWith: [],
         createdAt: new Date()
       });
       serverLinkInput.value = "";
+      serverNameInput.value = "";
       pinInput.value = "";
     } catch (e) {
       showAlert("Failed to add server: " + e.message);
@@ -344,7 +352,7 @@
 
       const info = document.createElement("div");
       info.className = "server-info";
-      info.textContent = `Private Server ${id.substring(0, 6)}`;
+      info.textContent = srv.name || `Private Server ${id.substring(0, 6)}`;
 
       const btnGroup = document.createElement("div");
       btnGroup.className = "btn-group";
@@ -400,157 +408,83 @@
     });
   }
 
-  // --- FRIENDS LOGIC ---
-
-  async function addFriend() {
-    const email = friendEmailInput.value.trim().toLowerCase();
-    if (!email) return showAlert("Enter a friend's email.");
-    if (email === currentUser.email.toLowerCase()) return showAlert("You can't add yourself as a friend.");
-
-    try {
-      const usersCol = collection(db, "users");
-      const q = query(usersCol, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        return showAlert("No user found with that email.");
-      }
-
-      const friendUser = querySnapshot.docs[0];
-      const friendUid = friendUser.id;
-
-      const friendRef = doc(db, "users", currentUser.uid, "friends", friendUid);
-      await setDoc(friendRef, {
-        email: email,
-        addedAt: new Date()
-      });
-
-      friendEmailInput.value = "";
-    } catch (e) {
-      showAlert("Failed to add friend: " + e.message);
-    }
-  }
-
-  addFriendBtn.onclick = addFriend;
-
-  function renderFriends(friendsData) {
-    friendsList.innerHTML = "";
-    if (friendsData.length === 0) {
-      friendsList.innerHTML = "<p style='color:#999;'>No friends added yet.</p>";
-      return;
-    }
-    friendsData.forEach(({ id, data }) => {
-      const friend = data;
-
-      const div = document.createElement("div");
-      div.className = "friend-item";
-
-      const info = document.createElement("div");
-      info.className = "friend-info";
-      info.textContent = friend.email;
-
-      const btnGroup = document.createElement("div");
-      btnGroup.className = "btn-group";
-
-      const removeBtn = document.createElement("button");
-      removeBtn.textContent = "Remove";
-      removeBtn.className = "danger";
-      removeBtn.onclick = async () => {
-        if (confirm(`Remove friend ${friend.email}?`)) {
-          try {
-            await deleteDoc(doc(db, "users", currentUser.uid, "friends", id));
-          } catch (e) {
-            showAlert("Failed to remove friend: " + e.message);
-          }
-        }
-      };
-
-      btnGroup.appendChild(removeBtn);
-
-      div.appendChild(info);
-      div.appendChild(btnGroup);
-      friendsList.appendChild(div);
-    });
-  }
-
   // --- SHARE PANEL ---
 
-  let currentSharePanelId = null;
-
-  async function toggleSharePanel(serverId, serverData) {
-    if (currentSharePanelId === serverId) {
-      clearSharePanel();
-      currentSharePanelId = null;
+  let openSharePanelId = null;
+  function toggleSharePanel(serverId, serverData) {
+    clearSharePanel();
+    if (openSharePanelId === serverId) {
+      openSharePanelId = null;
       return;
     }
+    openSharePanelId = serverId;
 
-    currentSharePanelId = serverId;
-
-    const serverDivs = [...serversList.children];
-    const serverDiv = serverDivs.find(div => div.querySelector(".server-info")?.textContent.includes(serverId.substring(0,6)));
+    const serverDiv = [...serversList.children].find(div => {
+      return div.querySelector(".server-info").textContent === (serverData.name || "") ||
+             div.querySelector(".btn-group button").textContent === "Share";
+    });
     if (!serverDiv) return;
-
-    clearSharePanel();
 
     const panel = document.createElement("div");
     panel.className = "share-panel";
 
+    // Share with all checkbox
     const shareAllLabel = document.createElement("label");
-    shareAllLabel.className = "checkbox-inline";
     const shareAllCheckbox = document.createElement("input");
     shareAllCheckbox.type = "checkbox";
-    shareAllCheckbox.checked = serverData.sharedWith?.includes("all") || false;
+    shareAllCheckbox.checked = serverData.sharedWith?.includes("all");
     shareAllLabel.appendChild(shareAllCheckbox);
     shareAllLabel.appendChild(document.createTextNode(" Share with all friends"));
-
     panel.appendChild(shareAllLabel);
 
+    // Friends list
     const friendsDiv = document.createElement("div");
     friendsDiv.style.maxHeight = "120px";
     friendsDiv.style.overflowY = "auto";
     friendsDiv.style.marginTop = "0.5rem";
 
-    const friendsSnap = await getDocs(collection(db, "users", currentUser.uid, "friends"));
-    const friendsDocs = friendsSnap.docs;
+    (async () => {
+      const friendsSnap = await getDocs(collection(db, "users", currentUser.uid, "friends"));
+      friendsSnap.docs.forEach(friendDoc => {
+        const friendId = friendDoc.id;
+        const friendEmail = friendDoc.data().email;
 
-    friendsDocs.forEach(friendDoc => {
-      const friendId = friendDoc.id;
-      const friendEmail = friendDoc.data().email;
+        if (friendEmail === currentUser.email) return;
 
-      if (friendEmail === currentUser.email) return;
+        const label = document.createElement("label");
+        label.className = "checkbox-inline";
 
-      const label = document.createElement("label");
-      label.className = "checkbox-inline";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = serverData.sharedWith?.includes(friendId);
+        cb.disabled = shareAllCheckbox.checked;
 
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = serverData.sharedWith?.includes(friendId);
-      cb.disabled = shareAllCheckbox.checked;
-
-      cb.addEventListener("change", async () => {
-        try {
-          let newSharedWith = serverData.sharedWith || [];
-          if (cb.checked) {
-            if (!newSharedWith.includes(friendId)) newSharedWith.push(friendId);
-          } else {
-            newSharedWith = newSharedWith.filter(id => id !== friendId);
+        cb.addEventListener("change", async () => {
+          try {
+            let newSharedWith = serverData.sharedWith || [];
+            if (cb.checked) {
+              if (!newSharedWith.includes(friendId)) newSharedWith.push(friendId);
+            } else {
+              newSharedWith = newSharedWith.filter(id => id !== friendId);
+            }
+            if (newSharedWith.includes("all")) {
+              newSharedWith = newSharedWith.filter(id => id !== "all");
+              shareAllCheckbox.checked = false;
+            }
+            await updateDoc(doc(db, "users", currentUser.uid, "servers", serverId), {
+              sharedWith: newSharedWith
+            });
+            serverData.sharedWith = newSharedWith; // update local cache
+          } catch (e) {
+            showAlert("Error updating shared list: " + e.message);
           }
-          if (newSharedWith.includes("all")) {
-            newSharedWith = newSharedWith.filter(id => id !== "all");
-            shareAllCheckbox.checked = false;
-          }
-          await updateDoc(doc(db, "users", currentUser.uid, "servers", serverId), {
-            sharedWith: newSharedWith
-          });
-        } catch (e) {
-          showAlert("Error updating shared list: " + e.message);
-        }
+        });
+
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(" " + friendEmail));
+        friendsDiv.appendChild(label);
       });
-
-      label.appendChild(cb);
-      label.appendChild(document.createTextNode(" " + friendEmail));
-      friendsDiv.appendChild(label);
-    });
+    })();
 
     panel.appendChild(friendsDiv);
 
@@ -563,6 +497,7 @@
         await updateDoc(doc(db, "users", currentUser.uid, "servers", serverId), {
           sharedWith: newSharedWith
         });
+        serverData.sharedWith = newSharedWith; // update local cache
         Array.from(friendsDiv.querySelectorAll("input[type=checkbox]")).forEach(cb => {
           cb.disabled = shareAllCheckbox.checked;
           if (shareAllCheckbox.checked) cb.checked = false;
@@ -580,34 +515,67 @@
     panels.forEach(p => p.remove());
   }
 
-  // --- REALTIME LISTENERS ---
+  // --- FRIENDS MANAGEMENT ---
 
-  let unsubscribeServers = null;
-  let unsubscribeFriends = null;
-  let unsubscribeSharedServers = null;
-  let sharedServersInterval = null;
+  addFriendBtn.onclick = async () => {
+    const email = friendEmailInput.value.trim();
+    if (!email) return showAlert("Enter a friend's email.");
+    if (email === currentUser.email) return showAlert("You cannot add yourself as a friend.");
 
-  function setupRealtimeListeners() {
-    if (unsubscribeServers) unsubscribeServers();
-    if (unsubscribeFriends) unsubscribeFriends();
-    if (unsubscribeSharedServers) unsubscribeSharedServers();
+    try {
+      // Search for user by email
+      const usersCol = collection(db, "users");
+      const q = query(usersCol, where("email", "==", email));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        showAlert("User not found.");
+        return;
+      }
+      const friendDoc = snap.docs[0];
+      const friendId = friendDoc.id;
 
-    const userServersCol = collection(db, "users", currentUser.uid, "servers");
-    unsubscribeServers = onSnapshot(userServersCol, (snapshot) => {
-      const serversData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
-      renderServers(serversData);
+      // Add friend reference to current user's friend list
+      await setDoc(doc(db, "users", currentUser.uid, "friends", friendId), {
+        email,
+      });
+      friendEmailInput.value = "";
+    } catch (e) {
+      showAlert("Failed to add friend: " + e.message);
+    }
+  };
+
+  function renderFriends(friendsData) {
+    friendsList.innerHTML = "";
+    if (friendsData.length === 0) {
+      friendsList.innerHTML = "<p style='color:#999;'>No friends added yet.</p>";
+      return;
+    }
+    friendsData.forEach(({ id, data }) => {
+      const div = document.createElement("div");
+      div.className = "friend-item";
+
+      const info = document.createElement("div");
+      info.className = "friend-info";
+      info.textContent = data.email;
+
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "danger";
+      removeBtn.onclick = async () => {
+        try {
+          await deleteDoc(doc(db, "users", currentUser.uid, "friends", id));
+        } catch (e) {
+          showAlert("Failed to remove friend: " + e.message);
+        }
+      };
+
+      div.appendChild(info);
+      div.appendChild(removeBtn);
+      friendsList.appendChild(div);
     });
-
-    const userFriendsCol = collection(db, "users", currentUser.uid, "friends");
-    unsubscribeFriends = onSnapshot(userFriendsCol, (snapshot) => {
-      const friendsData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
-      renderFriends(friendsData);
-    });
-
-    refreshSharedServers();
-    unsubscribeSharedServers = () => clearInterval(sharedServersInterval);
-    sharedServersInterval = setInterval(refreshSharedServers, 10000);
   }
+
+  // --- SHARED SERVERS ---
 
   async function refreshSharedServers() {
     sharedServersList.innerHTML = "";
@@ -643,7 +611,7 @@
 
       const info = document.createElement("div");
       info.className = "server-info";
-      info.textContent = `Shared Server from ${srv.ownerEmail} (ID: ${srv.id.substring(0,6)})`;
+      info.textContent = `${srv.name || "Shared Server"} from ${srv.ownerEmail}`;
 
       const joinBtn = document.createElement("button");
       joinBtn.textContent = "Join";
@@ -656,6 +624,33 @@
       div.appendChild(joinBtn);
       sharedServersList.appendChild(div);
     });
+  }
+
+  // --- REALTIME LISTENERS ---
+
+  let unsubscribeServers = null;
+  let unsubscribeFriends = null;
+  let sharedServersInterval = null;
+
+  function setupRealtimeListeners() {
+    if (unsubscribeServers) unsubscribeServers();
+    if (unsubscribeFriends) unsubscribeFriends();
+    if (sharedServersInterval) clearInterval(sharedServersInterval);
+
+    const userServersCol = collection(db, "users", currentUser.uid, "servers");
+    unsubscribeServers = onSnapshot(userServersCol, (snapshot) => {
+      const serversData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderServers(serversData);
+    });
+
+    const userFriendsCol = collection(db, "users", currentUser.uid, "friends");
+    unsubscribeFriends = onSnapshot(userFriendsCol, (snapshot) => {
+      const friendsData = snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderFriends(friendsData);
+    });
+
+    refreshSharedServers();
+    sharedServersInterval = setInterval(refreshSharedServers, 15000);
   }
 </script>
 
