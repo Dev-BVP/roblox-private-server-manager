@@ -1,363 +1,293 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Roblox Private Server Manager</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
-  
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
+  <title>Roblox Server Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* Reset */
-    * {
-      box-sizing: border-box;
-    }
-    body, html {
-      height: 100%;
+    body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-    }
-
-    /* Centered card */
-    #auth {
-      background: white;
-      padding: 40px 50px;
-      border-radius: 12px;
-      box-shadow:
-        0 4px 6px rgba(32,33,36,.28),
-        0 1px 3px rgba(32,33,36,.15);
-      text-align: center;
-      width: 360px;
-      max-width: 90vw;
-    }
-
-    #auth h1 {
-      font-weight: 400;
-      color: #202124;
-      font-size: 24px;
-      margin-bottom: 40px;
-      user-select: text;
-    }
-
-    /* Google button */
-    .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      border: 1px solid #dadce0;
-      padding: 12px 0;
-      width: 100%;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      box-shadow: inset 0 0 0 1px #dadce0;
-      user-select: none;
-    }
-    .google-btn:hover {
-      background: #f7f8f8;
-      box-shadow: inset 0 0 0 2px #4285f4;
-    }
-    .google-btn:active {
-      background: #e8e8e8;
-    }
-
-    /* Google icon */
-    .google-icon {
-      height: 20px;
-      width: 20px;
-      margin-left: 12px;
-      margin-right: 24px;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png') no-repeat center center;
-      background-size: contain;
-    }
-
-    .google-text {
-      font-size: 16px;
-      font-weight: 500;
-      color: #3c4043;
-      letter-spacing: 0.2px;
-    }
-
-    /* Hide manager initially */
-    #manager {
-      display: none;
-      background: #121212;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
       color: #eee;
-      border-radius: 12px;
-      padding: 24px 32px;
-      width: 480px;
-      max-width: 95vw;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
     }
 
-    #manager h2 {
-      margin-top: 0;
-      margin-bottom: 1rem;
+    h1 {
       color: #00bcd4;
-      font-weight: 600;
-      user-select: text;
+      margin-bottom: 20px;
+      font-size: 2rem;
     }
 
-    input[type="text"] {
+    .container {
       width: 100%;
-      padding: 12px 14px;
-      margin: 10px 0 16px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: #eee;
-      font-size: 1rem;
-      outline-offset: 2px;
+      max-width: 460px;
+      background-color: #1e1e1e;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
-    input[type="text"]:focus {
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: none;
+      border-radius: 10px;
+      background-color: #2c2c2c;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    input:focus {
       outline: 2px solid #00bcd4;
-      background: #333;
     }
 
     button {
-      cursor: pointer;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #00bcd4, #0097a7);
-      color: white;
-      font-weight: 700;
-      padding: 12px 0;
       width: 100%;
-      font-size: 1.1rem;
-      box-shadow: 0 5px 14px rgba(0, 188, 212, 0.6);
-      transition: background 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background-color: #00bcd4;
+      color: #000;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(0,188,212,0.3);
+      transition: background 0.2s ease;
     }
+
     button:hover {
-      background: linear-gradient(135deg, #0097a7, #00bcd4);
-      box-shadow: 0 9px 24px rgba(0, 188, 212, 0.9);
+      background-color: #00a1b2;
     }
-    button:active {
-      background: #00838f;
+
+    .hidden {
+      display: none;
+    }
+
+    .server-list {
+      margin-top: 16px;
+      max-height: 250px;
+      overflow-y: auto;
+      background: #2a2a2a;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .server-item {
+      background-color: #1f1f1f;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .server-item a {
+      color: #4dd0e1;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .server-item button {
+      width: auto;
+      margin-left: 8px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      background: #333;
+      color: #ddd;
       box-shadow: none;
     }
 
-    .scroll {
-      max-height: 280px;
-      overflow-y: auto;
-      margin-top: 1rem;
-      background: #292929;
-      border-radius: 14px;
-      padding: 1rem;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
-      user-select: none;
+    .server-item button:hover {
+      background: #444;
     }
 
-    .item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #1f1f1f;
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
-      margin-bottom: 0.8rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-      transition: background 0.2s ease;
-      user-select: text;
-    }
-    .item:hover {
-      background: #262626;
-    }
-    .item a {
-      color: #00bcd4;
-      font-weight: 600;
-      text-decoration: none;
-      max-width: 70%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .logout {
+      background-color: #c62828;
+      color: #fff;
+      margin-top: 20px;
     }
 
-    .item button {
-      all: unset;
-      cursor: pointer;
-      font-size: 1.2rem;
-      padding: 6px 12px;
-      border-radius: 10px;
-      color: #00bcd4;
-      user-select: none;
-      transition: color 0.25s ease;
-    }
-    .item button:hover {
-      color: #80deea;
-      background: rgba(0, 188, 212, 0.1);
-    }
-
-    #manager > button:last-child {
-      margin-top: 1.5rem;
-      font-size: 1rem;
-      background: #cc0000;
-      box-shadow: 0 6px 14px rgba(204, 0, 0, 0.7);
-    }
-    #manager > button:last-child:hover {
-      background: #b30000;
-      box-shadow: 0 10px 20px rgba(179, 0, 0, 0.8);
+    .logout:hover {
+      background-color: #b71c1c;
     }
   </style>
 </head>
 <body>
 
-  <!-- SIGN IN -->
-  <div id="auth" role="main" aria-label="Sign in to Private Server Manager">
-    <h1>Sign in</h1>
-    <button class="google-btn" onclick="signIn()" aria-label="Sign in with Google">
-      <div class="google-icon"></div>
-      <span class="google-text">Sign in with Google</span>
-    </button>
+  <h1>Private Server Manager</h1>
+
+  <div class="container" id="loginContainer">
+    <label>Username</label>
+    <input type="text" id="usernameInput" placeholder="Enter your username" />
+    <label>4-Digit PIN</label>
+    <input type="password" id="pinInput" maxlength="4" placeholder="Enter 4-digit PIN" />
+    <button id="loginBtn">Login / Create</button>
   </div>
 
-  <!-- MANAGER -->
-  <div id="manager" role="main" aria-live="polite">
-    <h2 id="welcome"></h2>
-    <input id="link" placeholder="Private Server Link" autocomplete="off" aria-label="Private Server Link" />
-    <input id="name" placeholder="Server Name (optional)" autocomplete="off" aria-label="Server Name" />
-    <button onclick="addServer()">Add Server</button>
-    <div class="scroll" id="serverList" tabindex="0" aria-label="Your saved private servers"></div>
-    <button onclick="signOut()">Sign Out</button>
+  <div class="container hidden" id="managerContainer">
+    <div id="welcomeMsg"></div>
+    <input type="text" id="serverLinkInput" placeholder="Private server link" />
+    <input type="text" id="serverNameInput" placeholder="Optional server name" />
+    <button id="addServerBtn">Add Server</button>
+
+    <div class="server-list" id="serverList"></div>
+
+    <button class="logout" id="logoutBtn">Logout</button>
   </div>
 
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
-      authDomain: "roblox-server-manager.firebaseapp.com",
-      projectId: "roblox-server-manager",
-      storageBucket: "roblox-server-manager.firebasestorage.app",
-      messagingSenderId: "223404001099",
-      appId: "1:223404001099:web:4eee47729061301c158ace",
-      measurementId: "G-G9PV6GD2KN"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const loginContainer = document.getElementById('loginContainer');
+    const managerContainer = document.getElementById('managerContainer');
+    const usernameInput = document.getElementById('usernameInput');
+    const pinInput = document.getElementById('pinInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const serverLinkInput = document.getElementById('serverLinkInput');
+    const serverNameInput = document.getElementById('serverNameInput');
+    const addServerBtn = document.getElementById('addServerBtn');
+    const serverList = document.getElementById('serverList');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const welcomeMsg = document.getElementById('welcomeMsg');
 
     let currentUser = null;
-    let servers = [];
-    let storedPin = null;
+    let data = JSON.parse(localStorage.getItem('psm') || '{}');
+    let pinAttempts = 0;
+    let locked = false;
 
-    function signIn() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider)
-        .then(result => {
-          currentUser = result.user;
-          document.getElementById("welcome").textContent = `Welcome, ${currentUser.displayName}`;
-          document.getElementById("auth").style.display = 'none';
-          document.getElementById("manager").style.display = 'block';
-          loadData();
-        })
-        .catch(err => alert("Login failed: " + err.message));
+    function save() {
+      localStorage.setItem('psm', JSON.stringify(data));
     }
 
-    function signOut() {
-      auth.signOut();
-      currentUser = null;
-      servers = [];
-      storedPin = null;
-      document.getElementById("auth").style.display = 'block';
-      document.getElementById("manager").style.display = 'none';
-    }
+    function login() {
+      if (locked) return alert("Locked: Wait 1 minute");
 
-    function loadData() {
-      const uid = currentUser.uid;
-      db.collection("accounts").doc(uid).get().then(doc => {
-        if (doc.exists) {
-          servers = doc.data().servers || [];
-          storedPin = doc.data().pin || null;
-          renderServers();
-        } else {
-          const pin = prompt("Set your 4-digit PIN:");
-          if (!pin || pin.length !== 4) return alert("Invalid PIN. Reload the page to try again.");
-          servers = [];
-          storedPin = pin;
-          db.collection("accounts").doc(uid).set({ servers, pin });
+      const user = usernameInput.value.trim();
+      const pin = pinInput.value.trim();
+
+      if (user.length === 0 || pin.length !== 4) {
+        alert("Enter username and 4-digit PIN");
+        return;
+      }
+
+      if (!data[user]) {
+        data[user] = { pin, servers: [] };
+        save();
+      }
+
+      if (data[user].pin !== pin) {
+        pinAttempts++;
+        if (pinAttempts >= 3) {
+          locked = true;
+          loginBtn.disabled = true;
+          setTimeout(() => {
+            locked = false;
+            pinAttempts = 0;
+            loginBtn.disabled = false;
+          }, 60000);
         }
+        return alert("Incorrect PIN");
+      }
+
+      currentUser = user;
+      pinAttempts = 0;
+      showManager();
+    }
+
+    function showManager() {
+      loginContainer.classList.add('hidden');
+      managerContainer.classList.remove('hidden');
+      welcomeMsg.innerHTML = `<strong>Welcome, ${currentUser}</strong>`;
+      renderServers();
+    }
+
+    function renderServers() {
+      const servers = data[currentUser].servers || [];
+      serverList.innerHTML = '';
+
+      servers.forEach((srv, idx) => {
+        const div = document.createElement('div');
+        div.className = 'server-item';
+
+        const link = document.createElement('a');
+        link.href = srv.link;
+        link.target = '_blank';
+        link.textContent = `Join Server ${srv.name}`;
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = "✏️";
+        editBtn.onclick = () => editServer(idx);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deleteServer(idx);
+
+        div.appendChild(link);
+        div.appendChild(editBtn);
+        div.appendChild(delBtn);
+        serverList.appendChild(div);
       });
     }
 
     function addServer() {
-      const link = document.getElementById("link").value.trim();
-      let name = document.getElementById("name").value.trim();
-      if (!link) return alert("Enter a private server link.");
+      const link = serverLinkInput.value.trim();
+      let name = serverNameInput.value.trim();
+
+      if (!link) return alert("Please enter a private server link");
       if (!name) {
-        const match = link.match(/code=([\w\d]+)/);
-        name = match ? match[1].slice(0, 12) : "Unnamed";
+        const code = link.match(/code=([\w\d]+)/);
+        name = code ? code[1].slice(0, 12) : "Unnamed";
       }
-      servers.push({ link, name });
-      saveServers();
-    }
 
-    function editServer(i) {
-      const pin = prompt("Enter your 4-digit PIN to edit:");
-      if (pin !== storedPin) return alert("Incorrect PIN");
-      const link = prompt("New link:", servers[i].link);
-      const name = prompt("New name:", servers[i].name);
-      if (link && name) {
-        servers[i] = { link, name };
-        saveServers();
-      }
-    }
-
-    function deleteServer(i) {
-      const pin = prompt("Enter your 4-digit PIN to delete:");
-      if (pin !== storedPin) return alert("Incorrect PIN");
-      servers.splice(i, 1);
-      saveServers();
-    }
-
-    function saveServers() {
-      db.collection("accounts").doc(currentUser.uid).set({ servers, pin: storedPin });
+      data[currentUser].servers.push({ link, name });
+      save();
       renderServers();
-      document.getElementById("link").value = '';
-      document.getElementById("name").value = '';
+      serverLinkInput.value = '';
+      serverNameInput.value = '';
     }
 
-    function renderServers() {
-      const container = document.getElementById("serverList");
-      container.innerHTML = '';
-      servers.forEach((s, i) => {
-        const row = document.createElement("div");
-        row.className = "item";
+    function editServer(index) {
+      const pin = prompt("Enter your 4-digit PIN to edit:");
+      if (pin !== data[currentUser].pin) return alert("Incorrect PIN");
 
-        const a = document.createElement("a");
-        a.href = s.link;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = `Join Server ${s.name}`;
+      const current = data[currentUser].servers[index];
+      const link = prompt("Edit link:", current.link);
+      const name = prompt("Edit name:", current.name);
 
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "✏️";
-        editBtn.title = "Edit Server";
-        editBtn.onclick = () => editServer(i);
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "🗑️";
-        delBtn.title = "Delete Server";
-        delBtn.onclick = () => deleteServer(i);
-
-        row.appendChild(a);
-        row.appendChild(editBtn);
-        row.appendChild(delBtn);
-        container.appendChild(row);
-      });
+      if (link && name) {
+        data[currentUser].servers[index] = { link, name };
+        save();
+        renderServers();
+      }
     }
+
+    function deleteServer(index) {
+      const pin = prompt("Enter your 4-digit PIN to delete:");
+      if (pin !== data[currentUser].pin) return alert("Incorrect PIN");
+
+      data[currentUser].servers.splice(index, 1);
+      save();
+      renderServers();
+    }
+
+    function logout() {
+      currentUser = null;
+      usernameInput.value = '';
+      pinInput.value = '';
+      loginContainer.classList.remove('hidden');
+      managerContainer.classList.add('hidden');
+    }
+
+    loginBtn.onclick = login;
+    addServerBtn.onclick = addServer;
+    logoutBtn.onclick = logout;
   </script>
-
 </body>
 </html>
