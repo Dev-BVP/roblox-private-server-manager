@@ -5,10 +5,20 @@
   <title>Roblox Private Server Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module">
-    // --- Firebase Setup ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDM9zEhD6qnur2RY4zK5ZQ_TbJVkESsnRw",
@@ -39,9 +49,10 @@
 
     signInBtn.onclick = async () => {
       try {
+        provider.setCustomParameters({ prompt: "select_account" }); // Always show account picker
         await signInWithPopup(auth, provider);
       } catch (e) {
-        alert("Sign in failed.");
+        alert("Sign-in failed.");
         console.error(e);
       }
     };
@@ -66,6 +77,10 @@
         }
 
         renderServers();
+      } else {
+        // No user signed in
+        document.getElementById("login").classList.remove("hidden");
+        appContainer.classList.add("hidden");
       }
     });
 
